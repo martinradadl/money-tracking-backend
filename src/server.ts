@@ -1,6 +1,6 @@
 import express from "express";
-import { main } from "./mongo-setup";
-
+import { initMongo } from "./mongo-setup";
+import transactions from "./routes/transactions"
 // Create an Express application
 const app = express();
 
@@ -19,4 +19,6 @@ app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-main().catch(console.dir);
+app.use('/transactions', transactions);
+
+initMongo().catch(console.dir);

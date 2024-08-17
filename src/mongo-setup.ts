@@ -11,7 +11,7 @@ const client = new MongoClient(uri, {
   },
 });
 
-export async function main() {
+export async function initMongo() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();

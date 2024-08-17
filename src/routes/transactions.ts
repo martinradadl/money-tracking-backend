@@ -1,22 +1,11 @@
 import express from "express";
+import * as transactionsController from "../controllers/transactions";
 
 const router = express.Router();
 
+router.get("/", transactionsController.getAll);
+router.post("/", transactionsController.create);
+router.put("/:id", transactionsController.edit);
+router.delete("/:id", transactionsController.deleteMany);
 
-const transactionsController = require("../controllers/transactions");
-
-// import * as transactionsController from "../controllers/transactions";
-
-
-
-
-
-router.get("/transactions", transactionsController.getTransactions);
-
-router.post("/transactions", transactionsController.postTransaction);
-
-router.get("/transactions/:id", transactionsController.getTransaction);
-
-router.put("/transactions/:id", transactionsController.updateTransaction);
-
-router.delete("/transactions/:id", transactionsController.deleteTransaction);
+export default router;
