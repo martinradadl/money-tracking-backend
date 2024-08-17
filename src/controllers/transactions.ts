@@ -1,21 +1,21 @@
 import { RequestHandler } from "express";
 
-const transactionModel = require("../models/transaction");
-// import transactionModel from "../models/transaction";
+import * as transactionModel from "../models/transaction";
 
-export const getAll: RequestHandler<{}> = async (req, res) => {
+export const getAll: RequestHandler = async (req, res) => {
   try {
     const transactions = await transactionModel.Transaction.find({
       userId: req.body.userId,
     });
     return res.json(transactions);
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).send(err.message);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.message);
+    }
   }
 };
 
-export const create: RequestHandler<{}> = async (req, res) => {
+export const create: RequestHandler = async (req, res) => {
   const newTransaction = new transactionModel.Transaction({
     type: req.body.type,
     concept: req.body.concept,
@@ -26,9 +26,10 @@ export const create: RequestHandler<{}> = async (req, res) => {
   try {
     const createdTransaction = await newTransaction.save();
     return res.json(createdTransaction);
-  } catch (err: any) {
-    console.log(err.message);
-    return res.send("Transaction not created");
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.message);
+    }
   }
 };
 
@@ -40,12 +41,14 @@ export const edit: RequestHandler<{ id: string }> = async (req, res) => {
       { new: true }
     );
     return res.json(transaction);
-  } catch (err: any) {
-    res.status(500).send(err.message);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.message);
+    }
   }
 };
 
-export const deleteMany: RequestHandler<{}> = async (req, res) => {
+export const deleteMany: RequestHandler = async (req, res) => {
   try {
     let deletedTransaction = null;
     for (const id of req.body.ids) {
@@ -54,7 +57,9 @@ export const deleteMany: RequestHandler<{}> = async (req, res) => {
       );
     }
     return res.json(deletedTransaction);
-  } catch (err: any) {
-    res.status(500).send(err.message);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.message);
+    }
   }
 };
