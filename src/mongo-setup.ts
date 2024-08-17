@@ -11,7 +11,7 @@ const client = new MongoClient(uri, {
   },
 });
 
-export async function main() {
+export async function initMongo() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
@@ -24,5 +24,4 @@ export async function main() {
     // Ensures that the client will close when you finish/error
     await client.close();
   }
-  // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
