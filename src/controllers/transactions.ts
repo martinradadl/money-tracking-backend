@@ -5,7 +5,7 @@ import * as transactionModel from "../models/transaction";
 export const getAll: RequestHandler = async (req, res) => {
   try {
     const transactions = await transactionModel.Transaction.find({
-      userId: req.body.userId,
+      userId: req.params.userId,
     });
     return res.json(transactions);
   } catch (err: unknown) {
