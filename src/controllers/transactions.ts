@@ -5,7 +5,7 @@ import * as transactionModel from "../models/transaction";
 export const getAll: RequestHandler = async (req, res) => {
   try {
     const transactions = await transactionModel.Transaction.find({
-      userId: req.params.userId,
+      // userId: req.params.userId,
     });
     return res.json(transactions);
   } catch (err: unknown) {
@@ -21,7 +21,7 @@ export const create: RequestHandler = async (req, res) => {
     concept: req.body.concept,
     amount: req.body.amount,
     category: req.body.category,
-    userId: req.body.userId,
+    // userId: req.body.userId,
   });
   try {
     const createdTransaction = await newTransaction.save();
