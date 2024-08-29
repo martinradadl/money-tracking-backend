@@ -11,12 +11,11 @@ const app = express();
 // Set the port number for the server
 const port = 3000;
 
-initMongo()
-  .catch(console.dir);
+initMongo().catch(console.dir);
 
-  app.use(jsonParser);
-    app.use(cors({ origin: "http://127.0.0.1:5173" }));
-    app.use("/transactions", transactions);
+app.use(jsonParser);
+app.use(cors({ origin: "http://127.0.0.1:5173" }));
+app.use("/transactions", transactions);
 
 // Start the server and listen on the specified port
 app.listen(port, () => {
