@@ -5,7 +5,7 @@ const schema = new mongoose.Schema({
   concept: String,
   amount: Number,
   category: String,
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  // userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
 export const Transaction = mongoose.model("Transaction", schema);
