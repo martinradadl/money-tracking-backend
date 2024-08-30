@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 
 import * as transactionModel from "../models/transaction";
 
-export const getAll: RequestHandler = async (req, res) => {
+export const getAll: RequestHandler = async (_, res) => {
   try {
     const transactions = await transactionModel.Transaction.find({
       // userId: req.params.userId,
