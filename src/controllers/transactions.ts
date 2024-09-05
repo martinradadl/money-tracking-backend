@@ -48,14 +48,10 @@ export const edit: RequestHandler<{ id: string }> = async (req, res) => {
   }
 };
 
-export const deleteMany: RequestHandler = async (req, res) => {
+export const deleteOne: RequestHandler = async (req, res) => {
   try {
-    let deletedTransaction = null;
-    for (const id of req.body.ids) {
-      deletedTransaction = await transactionModel.Transaction.findByIdAndDelete(
-        id
-      );
-    }
+    const deletedTransaction =
+      await transactionModel.Transaction.findByIdAndDelete(req.params.id);
     return res.json(deletedTransaction);
   } catch (err: unknown) {
     if (err instanceof Error) {
