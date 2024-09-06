@@ -7,5 +7,6 @@ router.get("/:userId", transactionsController.getAll);
 router.post("/", transactionsController.create);
 router.put("/:id", transactionsController.edit);
 router.delete("/:id", transactionsController.deleteOne);
+router.get("/categories", transactionsController.getCategories);
 
 export default router;
