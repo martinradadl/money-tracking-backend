@@ -7,7 +7,7 @@ export const getAll: RequestHandler = async (_, res) => {
   try {
     const transactions = await transactionModel.Transaction.find({
       // userId: req.params.userId,
-    });
+    }).populate("category");
     return res.json(transactions);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -26,6 +26,7 @@ export const create: RequestHandler = async (req, res) => {
   });
   try {
     const createdTransaction = await newTransaction.save();
+    createdTransaction.populate("category");
     return res.json(createdTransaction);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -40,7 +41,7 @@ export const edit: RequestHandler<{ id: string }> = async (req, res) => {
       req.params.id,
       { $set: req.body },
       { new: true }
-    );
+    ).populate("category");
     return res.json(transaction);
   } catch (err: unknown) {
     if (err instanceof Error) {
