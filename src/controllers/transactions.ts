@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 
 import * as transactionModel from "../models/transaction";
+import * as categoryModel from "../models/category";
 
 export const getAll: RequestHandler = async (_, res) => {
   try {
@@ -53,6 +54,17 @@ export const deleteOne: RequestHandler = async (req, res) => {
     const deletedTransaction =
       await transactionModel.Transaction.findByIdAndDelete(req.params.id);
     return res.json(deletedTransaction);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.message);
+    }
+  }
+};
+
+export const getCategories: RequestHandler = async (_, res) => {
+  try {
+    const categories = await categoryModel.Category.find({});
+    return res.json(categories);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error(err.message);
