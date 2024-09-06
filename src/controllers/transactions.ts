@@ -26,8 +26,8 @@ export const create: RequestHandler = async (req, res) => {
   });
   try {
     const createdTransaction = await newTransaction.save();
-    createdTransaction.populate("category");
-    return res.json(createdTransaction);
+    const populatedTransaction = await createdTransaction.populate("category");
+    return res.json(populatedTransaction);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error(err.message);
