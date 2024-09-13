@@ -1,11 +1,12 @@
-import { RequestHandler } from "express";
+import { Request, RequestHandler, Response } from "express";
 import * as userModel from "../models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const jwtSecret = "s5r2hb46d62dhe828393jdsy3";
+export const maxAge = 3 * 60 * 60; // 3hrs in sec
 
-export const register: RequestHandler = async (req, res) => {
+export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
   if (password.length < 6) {
     return res
@@ -13,26 +14,24 @@ export const register: RequestHandler = async (req, res) => {
       .json({ message: "Password must have more than 6 characters" });
   }
   try {
-    bcrypt.hash(password, 10).then(async (hash: string) => {
-      await userModel.User.create({
-        name,
-        email,
-        password: hash,
-      }).then((user) => {
-        const maxAge = 3 * 60 * 60;
-        const token = jwt.sign({ id: user._id, email }, jwtSecret, {
-          expiresIn: maxAge, // 3hrs in sec
-        });
-        res.cookie("jwt", token, {
-          httpOnly: true,
-          maxAge: maxAge * 1000, // 3hrs in ms
-        });
+    const hash = await bcrypt.hash(password, 10);
+    const user = await userModel.User.create({
+      name,
+      email,
+      password: hash,
+    });
+    const token = jwt.sign({ id: user._id, email }, jwtSecret, {
+      expiresIn: maxAge,
+    });
 
-        res.status(200).json({
-          message: "User successfully created",
-          user,
-        });
-      });
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      maxAge: maxAge * 1000, // 3hrs in ms
+    });
+
+    return res.status(200).json({
+      message: "User successfully created",
+      user,
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -41,7 +40,7 @@ export const register: RequestHandler = async (req, res) => {
   }
 };
 
-export const login: RequestHandler = async (req, res) => {
+export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -58,7 +57,6 @@ export const login: RequestHandler = async (req, res) => {
       });
     } else {
       if (user.password && (await bcrypt.compare(password, user.password))) {
-        const maxAge = 3 * 60 * 60;
         const token = jwt.sign({ id: user._id, email }, jwtSecret, {
           expiresIn: maxAge, // 3hrs in sec
         });
@@ -71,7 +69,7 @@ export const login: RequestHandler = async (req, res) => {
           user,
         });
       } else {
-        res.status(400).json({ message: "Login not succesful" });
+        res.status(400).json({ message: "Login not successful" });
       }
     }
   } catch (err: unknown) {

@@ -5,6 +5,8 @@ import transactions from "./routes/transactions";
 import auth from "./routes/authentication";
 import cors from "cors";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import { tokenVerification } from "./middleware/authentication";
 
 const jsonParser = bodyParser.json();
 // Create an Express application
@@ -18,8 +20,10 @@ initMongo().catch(console.dir);
 
 app.use(jsonParser);
 app.use(cors({ origin: "http://127.0.0.1:5173" }));
+app.use(cookieParser());
 app.use("/transactions", transactions);
 app.use("/auth", auth);
+app.get("/userAuth", tokenVerification, (_, res) => res.send("User Route"));
 
 // Start the server and listen on the specified port
 httpServer.listen(port, () => {
