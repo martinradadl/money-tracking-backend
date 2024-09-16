@@ -1,4 +1,4 @@
-import { Request, RequestHandler, Response } from "express";
+import { Request, Response } from "express";
 import * as userModel from "../models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -79,28 +79,28 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const edit: RequestHandler = async (req, res) => {
+export const edit = async (req: Request, res: Response) => {
   try {
     const user = await userModel.User.findByIdAndUpdate(
       req.params.id,
       { $set: { password: req.body } },
       { new: true }
     );
-    return res.json(user);
+    return res.status(200).json(user);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+      res.status(500).json({message: err.message})
     }
   }
 };
 
-export const deleteUser: RequestHandler = async (req, res) => {
+export const deleteUser = async (req: Request, res: Response) => {
   try {
     const deletedUser = await userModel.User.findByIdAndDelete(req.params.id);
-    return res.json(deletedUser);
+    return res.status(200).json(deletedUser);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+      res.status(500).json({message: err.message})
     }
   }
 };

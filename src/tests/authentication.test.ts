@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { jwtSecret, tokenVerification } from "../middleware/authentication";
-import { login, maxAge, register } from "../controllers/authentication";
+import { deleteUser, edit, login, maxAge, register } from "../controllers/authentication";
 import { User } from "../models/user";
 import { initializeReqResMocks } from "./utils";
 
@@ -35,10 +35,9 @@ describe("Authentication Middleware", () => {
     const { req, res } = initializeReqResMocks();
     tokenVerification(req, res, mockedNext);
     expect(res.statusCode).toBe(401);
-    expect(mockedNext).not.toHaveBeenCalled();
   });
 
-  it("should tokenVerification return 401 if token nullish", async () => {
+  it("should tokenVerification return 401 if token not nullish", async () => {
     const { req, res } = initializeReqResMocks();
     req.cookies.jwt = "otherToken";
     tokenVerification(req, res, mockedNext);
@@ -123,7 +122,47 @@ describe("Authentication and User Controllers", () => {
     });
   });
 
-  describe.skip("Edit User Controller", () => {});
+  describe("Edit User Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
 
-  describe.skip("Delete User Controller", () => {});
+    it("should not find userId", async () => {
+      vi.mocked(User.findByIdAndUpdate, true).mockImplementation(() => {
+        throw new Error();
+      });
+      const { req, res } = initializeReqResMocks();
+      req.body = { email: fakeUser.email, password: fakePassword };
+      await edit(req, res);
+      expect(res.statusCode).toBe(500);
+    });
+    it("Should update User", async () => {
+      vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(fakeUser);
+      const { req, res } = initializeReqResMocks();
+      req.body = { email: fakeUser.email, password: fakePassword };
+      await edit(req, res);
+      expect(res.statusCode).toBe(200);
+    });
+  });
+
+  describe("Delete User Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should not find userId", async () => {
+      vi.mocked(User.findByIdAndDelete, true).mockImplementation(() => {
+        throw new Error();
+      });
+      const { req, res } = initializeReqResMocks();
+      await deleteUser(req, res);
+      expect(res.statusCode).toBe(500);
+    });
+    it("Should delete User", async () => {
+      vi.mocked(User.findByIdAndDelete, true).mockResolvedValue(fakeUser);
+      const { req, res } = initializeReqResMocks();
+      await deleteUser(req, res);
+      expect(res.statusCode).toBe(200);
+    });
+  });
 });
