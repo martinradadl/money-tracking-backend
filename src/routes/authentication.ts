@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post("/register", authController.register);
 router.post("/login", authController.register);
-router.put("/:id", tokenVerification ,authController.edit)
+router.put("/:id", tokenVerification, authController.edit);
+router.delete("/:id", tokenVerification, authController.deleteUser);
 
 export default router;
