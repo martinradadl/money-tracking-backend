@@ -86,10 +86,16 @@ export const edit = async (req: Request, res: Response) => {
       { $set: { password: req.body } },
       { new: true }
     );
+    if (!user) {
+      return res.status(401).json({
+        message: "Edit not successful",
+        error: "User not found",
+      });
+    }
     return res.status(200).json(user);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      res.status(500).json({message: err.message})
+      res.status(500).json({ message: err.message });
     }
   }
 };
@@ -97,10 +103,16 @@ export const edit = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const deletedUser = await userModel.User.findByIdAndDelete(req.params.id);
+    if (!deletedUser) {
+      return res.status(401).json({
+        message: "Delete not successful",
+        error: "User not found",
+      });
+    }
     return res.status(200).json(deletedUser);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      res.status(500).json({message: err.message})
+      res.status(500).json({ message: err.message });
     }
   }
 };
