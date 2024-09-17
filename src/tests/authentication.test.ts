@@ -10,7 +10,7 @@ import {
   register,
 } from "../controllers/authentication";
 import { User } from "../models/user";
-import { initializeReqResMocks } from "./utils";
+import { initializeReqResMocks, mockedCatchError } from "./utils";
 
 vi.mock("../models/user");
 vi.mock("bcryptjs");
@@ -64,6 +64,18 @@ describe("Authentication and User Controllers", () => {
     afterEach(() => {
       vi.restoreAllMocks();
     });
+
+    it("should return 500 when and error is throwed", async () => {
+      const { req, res } = initializeReqResMocks();
+      req.body = { ...fakeUser };
+      vi.mocked(User.create, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      await register(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
     it("should return 400 when password is less than 6 characters ", async () => {
       const { req, res } = initializeReqResMocks();
       req.body = { ...fakeUser, password: "12345" };
@@ -91,6 +103,17 @@ describe("Authentication and User Controllers", () => {
   describe("Login User Controller", () => {
     afterEach(() => {
       vi.restoreAllMocks();
+    });
+
+    it("should return 500 when and error is throwed", async () => {
+      vi.mocked(User.findOne, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      req.body = { ...fakeUser };
+      await login(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
     });
 
     it("should return 400 when email or password is not present", async () => {
@@ -148,6 +171,17 @@ describe("Authentication and User Controllers", () => {
       vi.restoreAllMocks();
     });
 
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(User.findByIdAndUpdate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      req.body = { email: fakeUser.email, password: fakePassword };
+      await edit(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
     it("should not find userId", async () => {
       const { req, res } = initializeReqResMocks();
       req.body = { email: fakeUser.email, password: fakePassword };
@@ -172,6 +206,16 @@ describe("Authentication and User Controllers", () => {
   describe("Delete User Controller", () => {
     afterEach(() => {
       vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(User.findByIdAndDelete, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await deleteUser(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
     });
 
     it("should not find userId", async () => {

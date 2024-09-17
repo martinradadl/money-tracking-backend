@@ -35,7 +35,7 @@ export const register = async (req: Request, res: Response) => {
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+      return res.status(500).json({ message: err.message });
     }
   }
 };
@@ -74,7 +74,7 @@ export const login = async (req: Request, res: Response) => {
     }
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+      return res.status(500).json({ message: err.message });
     }
   }
 };
@@ -95,7 +95,7 @@ export const edit = async (req: Request, res: Response) => {
     return res.status(200).json(user);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      res.status(500).json({ message: err.message });
+      return res.status(500).json({ message: err.message });
     }
   }
 };
@@ -112,7 +112,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     return res.status(200).json(deletedUser);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      res.status(500).json({ message: err.message });
+      return res.status(500).json({ message: err.message });
     }
   }
 };
