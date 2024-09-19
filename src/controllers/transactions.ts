@@ -88,11 +88,11 @@ export const getBalance = async (req: Request, res: Response) => {
           _id: null,
           balance: {
             $sum: {
-              $cond: {
-                if: { $eq: ["$type", "income"] },
-                then: "$amount",
-                else: { $multiply: ["$amount", -1] },
-              },
+              $cond: [
+                { $eq: ["$type", "income"] },
+                "$amount",
+                { $multiply: ["$amount", -1] },
+              ],
             },
           },
         },
