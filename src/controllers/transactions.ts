@@ -1,74 +1,107 @@
-import { RequestHandler } from "express";
-
+import { Request, Response } from "express";
 import * as transactionModel from "../models/transaction";
 import * as categoryModel from "../models/category";
+import { ObjectId } from "../mongo-setup";
 
-export const getAll: RequestHandler = async (_, res) => {
+export const getAll = async (req: Request, res: Response) => {
   try {
     const transactions = await transactionModel.Transaction.find({
-      // userId: req.params.userId,
+      userId: req.params.userId,
     }).populate("category");
-    return res.json(transactions);
+
+    return res.status(200).json(transactions);
   } catch (err: unknown) {
+    console.log(err);
     if (err instanceof Error) {
-      console.error(err.message);
+      return res.status(500).json({ message: err.message });
     }
   }
 };
 
-export const create: RequestHandler = async (req, res) => {
-  const newTransaction = new transactionModel.Transaction({
-    type: req.body.type,
-    concept: req.body.concept,
-    amount: req.body.amount,
-    category: req.body.category,
-    // userId: req.body.userId,
-  });
+export const create = async (req: Request, res: Response) => {
   try {
-    const createdTransaction = await newTransaction.save();
-    const populatedTransaction = await createdTransaction.populate("category");
-    return res.json(populatedTransaction);
+    const newTransaction = await transactionModel.Transaction.create({
+      type: req.body.type,
+      concept: req.body.concept,
+      amount: req.body.amount,
+      category: req.body.category,
+      userId: req.body.userId,
+    });
+    const populatedTransaction = await newTransaction.populate("category");
+    return res.status(200).json(populatedTransaction);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+      return res.status(500).json({ message: err.message });
     }
   }
 };
 
-export const edit: RequestHandler<{ id: string }> = async (req, res) => {
+export const edit = async (req: Request, res: Response) => {
   try {
     const transaction = await transactionModel.Transaction.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true }
-    ).populate("category");
-    return res.json(transaction);
+    );
+    const populatedTransaction = await transaction?.populate("category");
+    return res.status(200).json(populatedTransaction);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+      return res.status(500).json({ message: err.message });
     }
   }
 };
 
-export const deleteOne: RequestHandler = async (req, res) => {
+export const deleteOne = async (req: Request, res: Response) => {
   try {
     const deletedTransaction =
       await transactionModel.Transaction.findByIdAndDelete(req.params.id);
-    return res.json(deletedTransaction);
+    return res.status(200).json(deletedTransaction);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+      return res.status(500).json({ message: err.message });
     }
   }
 };
 
-export const getCategories: RequestHandler = async (_, res) => {
+export const getCategories = async (_: Request, res: Response) => {
   try {
     const categories = await categoryModel.Category.find({});
-    return res.json(categories);
+    return res.status(200).json(categories);
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+      return res.status(500).json({ message: err.message });
+    }
+  }
+};
+
+export const getBalance = async (req: Request, res: Response) => {
+  try {
+    const transactionsAgg = await transactionModel.Transaction.aggregate([
+      {
+        $match: {
+          userId: new ObjectId(req.params.userId),
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          balance: {
+            $sum: {
+              $cond: [
+                { $eq: ["$type", "income"] },
+                "$amount",
+                { $multiply: ["$amount", -1] },
+              ],
+            },
+          },
+        },
+      },
+    ]);
+    return res.status(200).json(transactionsAgg[0].balance);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
     }
   }
 };
