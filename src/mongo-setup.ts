@@ -10,3 +10,5 @@ export async function initMongo() {
     console.log("mongosetup complete")
   }
 }
+
+export const ObjectId = mongoose.Types.ObjectId;
