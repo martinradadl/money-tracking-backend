@@ -67,15 +67,10 @@ export const login = async (req: Request, res: Response) => {
           maxAge: maxAge * 1000, // 3hrs in ms
           sameSite: "none",
         });
-        res
-          .set({
-            "access-control-expose-headers": "Set-Cookie",
-          })
-          .status(200)
-          .json({
-            message: "Login successful",
-            user,
-          });
+        res.status(200).json({
+          message: "Login successful",
+          user,
+        });
       } else {
         res.status(400).json({ message: "Login not successful" });
       }
