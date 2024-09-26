@@ -25,8 +25,10 @@ export const register = async (req: Request, res: Response) => {
     });
 
     res.cookie("jwt", token, {
-      httpOnly: true,
+      httpOnly: false,
       maxAge: maxAge * 1000, // 3hrs in ms
+      sameSite: "none",
+      secure: true,
     });
 
     return res.status(200).json({
@@ -49,7 +51,7 @@ export const login = async (req: Request, res: Response) => {
     });
   }
   try {
-    const user = await userModel.User.findOne({ email, password });
+    const user = await userModel.User.findOne({ email });
     if (!user) {
       res.status(401).json({
         message: "Login not successful",
@@ -61,13 +63,19 @@ export const login = async (req: Request, res: Response) => {
           expiresIn: maxAge, // 3hrs in sec
         });
         res.cookie("jwt", token, {
-          httpOnly: true,
+          httpOnly: false,
           maxAge: maxAge * 1000, // 3hrs in ms
+          sameSite: "none",
         });
-        res.status(200).json({
-          message: "Login successful",
-          user,
-        });
+        res
+          .set({
+            "access-control-expose-headers": "Set-Cookie",
+          })
+          .status(200)
+          .json({
+            message: "Login successful",
+            user,
+          });
       } else {
         res.status(400).json({ message: "Login not successful" });
       }
