@@ -5,7 +5,7 @@ import { tokenVerification } from "../middleware/authentication";
 const router = express.Router();
 
 router.post("/register", authController.register);
-router.post("/login", authController.register);
+router.post("/login", authController.login);
 router.put("/:id", tokenVerification, authController.edit);
 router.delete("/:id", tokenVerification, authController.deleteUser);
 
