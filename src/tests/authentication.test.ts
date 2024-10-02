@@ -53,7 +53,7 @@ describe("Authentication Middleware", () => {
 
   it("should tokenVerification invoke next if token is verified", () => {
     const { req, res } = initializeReqResMocks();
-    req.cookies.jwt = fakeToken;
+    req.headers.authorization = `Bearer ${fakeToken}`;
     tokenVerification(req, res, mockedNext);
     expect(mockedNext).toHaveBeenCalled();
   });
@@ -96,6 +96,7 @@ describe("Authentication and User Controllers", () => {
       expect(res._getJSONData()).toEqual({
         message: "User successfully created",
         user: fakeUser,
+        token: fakeToken,
       });
     });
   });
@@ -162,6 +163,7 @@ describe("Authentication and User Controllers", () => {
       expect(res._getJSONData()).toEqual({
         message: "Login successful",
         user: fakeUser,
+        token: fakeToken,
       });
     });
   });
