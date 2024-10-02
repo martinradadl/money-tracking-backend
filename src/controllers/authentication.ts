@@ -24,16 +24,10 @@ export const register = async (req: Request, res: Response) => {
       expiresIn: maxAge,
     });
 
-    res.cookie("jwt", token, {
-      httpOnly: false,
-      maxAge: maxAge * 1000, // 3hrs in ms
-      sameSite: "none",
-      secure: true,
-    });
-
     return res.status(200).json({
       message: "User successfully created",
       user,
+      token,
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -62,14 +56,10 @@ export const login = async (req: Request, res: Response) => {
         const token = jwt.sign({ id: user._id, email }, jwtSecret, {
           expiresIn: maxAge, // 3hrs in sec
         });
-        res.cookie("jwt", token, {
-          httpOnly: false,
-          maxAge: maxAge * 1000, // 3hrs in ms
-          sameSite: "none",
-        });
         res.status(200).json({
           message: "Login successful",
           user,
+          token,
         });
       } else {
         res.status(400).json({ message: "Login not successful" });

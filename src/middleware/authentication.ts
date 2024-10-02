@@ -8,9 +8,9 @@ export const tokenVerification = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies.jwt;
+  const token = req.headers.authorization?.split(" ")[1];
   if (token) {
-    jwt.verify(token, jwtSecret, (err: VerifyErrors | null) => {
+    jwt.verify(token.toString(), jwtSecret, (err: VerifyErrors | null) => {
       if (err) {
         return res.status(401).json({ message: "Not authorized" });
       } else {
