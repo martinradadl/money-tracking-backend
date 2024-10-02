@@ -98,7 +98,8 @@ export const getBalance = async (req: Request, res: Response) => {
         },
       },
     ]);
-    return res.status(200).json(transactionsAgg[0].balance);
+    const balance = transactionsAgg[0]?.balance || 0;
+    return res.status(200).json(balance);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
