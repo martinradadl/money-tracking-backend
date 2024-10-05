@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import * as userModel from "../models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { currencies } from "../data";
 
 const jwtSecret = "s5r2hb46d62dhe828393jdsy3";
 export const maxAge = 3 * 60 * 60; // 3hrs in sec
@@ -76,7 +77,34 @@ export const edit = async (req: Request, res: Response) => {
   try {
     const user = await userModel.User.findByIdAndUpdate(
       req.params.id,
-      { $set: { password: req.body } },
+      { $set: req.body },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(401).json({
+        message: "Edit not successful",
+        error: "User not found",
+      });
+    }
+    return res.status(200).json(user);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+};
+
+export const changePassword = async (req: Request, res: Response) => {
+  if (req.params.password.length < 6) {
+    return res
+      .status(400)
+      .json({ message: "Password must have more than 6 characters" });
+  }
+  try {
+    const hash = await bcrypt.hash(req.params.password, 10);
+    const user = await userModel.User.findByIdAndUpdate(
+      req.params.id,
+      { $set: { password: hash } },
       { new: true }
     );
     if (!user) {
@@ -103,6 +131,37 @@ export const deleteUser = async (req: Request, res: Response) => {
       });
     }
     return res.status(200).json(deletedUser);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+};
+
+export const checkPassword = async (req: Request, res: Response) => {
+  try {
+    const user = await userModel.User.findById(req.params.id);
+    if (!user) {
+      res.status(401).json({
+        message: "Could not check password",
+        error: "User not found",
+      });
+    } else {
+      const isCorrectPassword =
+        user.password &&
+        (await bcrypt.compare(req.params.password, user.password));
+      return res.status(200).json(isCorrectPassword);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+};
+
+export const getCurrencies = (_: Request, res: Response) => {
+  try {
+    return res.json(currencies);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
