@@ -160,11 +160,5 @@ export const checkPassword = async (req: Request, res: Response) => {
 };
 
 export const getCurrencies = (_: Request, res: Response) => {
-  try {
-    return res.json(currencies);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
+  return res.json(currencies);
 };
