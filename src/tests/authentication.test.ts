@@ -3,24 +3,30 @@ import bcrypt from "bcryptjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { jwtSecret, tokenVerification } from "../middleware/authentication";
 import {
+  changePassword,
+  checkPassword,
   deleteUser,
   edit,
+  getCurrencies,
   login,
   maxAge,
   register,
 } from "../controllers/authentication";
 import { User } from "../models/user";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
+import { currencies } from "../data";
 
 vi.mock("../models/user");
 vi.mock("bcryptjs");
 
 const fakePassword = "fakePassword";
+const newFakePassword = "newFakePassword";
 const fakeUser = {
   _id: "fakeId",
   name: "fakeName",
   email: "fakeEmail",
   password: fakePassword,
+  currency: { name: "fakeCurrency", code: "FAKE" },
 };
 const fakeToken = jwt.sign(
   { id: fakeUser._id, email: fakeUser.email },
@@ -236,6 +242,97 @@ describe("Authentication and User Controllers", () => {
       await deleteUser(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeUser);
+    });
+  });
+
+  describe("Change Password Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(User.findByIdAndUpdate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      req.params.password = newFakePassword;
+      await changePassword(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("should not find userId", async () => {
+      vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(null);
+      const { req, res } = initializeReqResMocks();
+      req.params.password = newFakePassword;
+      await changePassword(req, res);
+      expect(res.statusCode).toBe(401);
+      expect(res._getJSONData()).toEqual({
+        message: "Edit not successful",
+        error: "User not found",
+      });
+    });
+    it("Should update password", async () => {
+      vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(fakeUser);
+      const { req, res } = initializeReqResMocks();
+      req.params.password = newFakePassword;
+      await changePassword(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeUser);
+    });
+  });
+
+  describe("Check Password Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(User.findById, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      req.params.id = fakeUser._id;
+      await checkPassword(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("should not find user", async () => {
+      vi.mocked(User.findById, true).mockResolvedValue(null);
+      const { req, res } = initializeReqResMocks();
+      req.params.id = fakeUser._id;
+      await checkPassword(req, res);
+      expect(res.statusCode).toBe(401);
+      expect(res._getJSONData()).toEqual({
+        message: "Could not check password",
+        error: "User not found",
+      });
+    });
+    it("Should return true", async () => {
+      vi.mocked(User.findById, true).mockResolvedValue(fakeUser);
+      vi.mocked(bcrypt, true).compare.mockImplementation(() =>
+        Promise.resolve(true)
+      );
+      const { req, res } = initializeReqResMocks();
+      req.params.id = fakeUser._id;
+      req.params.password = fakePassword;
+      await checkPassword(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toBeTruthy();
+    });
+  });
+
+  describe("Get Currencies Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("Should Get Currencies", async () => {
+      const { req, res } = initializeReqResMocks();
+      getCurrencies(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(currencies);
     });
   });
 });

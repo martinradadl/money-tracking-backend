@@ -6,7 +6,18 @@ const router = express.Router();
 
 router.post("/register", authController.register);
 router.post("/login", authController.login);
+router.put(
+  "/:id/change-password/:password",
+  tokenVerification,
+  authController.changePassword
+);
 router.put("/:id", tokenVerification, authController.edit);
 router.delete("/:id", tokenVerification, authController.deleteUser);
+router.get("/currencies", authController.getCurrencies);
+router.get(
+  "/:id/check-password/:password",
+  tokenVerification,
+  authController.checkPassword
+);
 
 export default router;
