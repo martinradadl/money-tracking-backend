@@ -7,7 +7,7 @@ const router = express.Router();
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 router.put(
-  "/:id/change-password/:password",
+  "/:id/change-password",
   tokenVerification,
   authController.changePassword
 );

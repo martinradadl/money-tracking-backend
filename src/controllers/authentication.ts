@@ -95,13 +95,13 @@ export const edit = async (req: Request, res: Response) => {
 };
 
 export const changePassword = async (req: Request, res: Response) => {
-  if (req.params.password.length < 6) {
+  if (req.body.newPassword.length < 6) {
     return res
       .status(400)
       .json({ message: "Password must have more than 6 characters" });
   }
   try {
-    const hash = await bcrypt.hash(req.params.password, 10);
+    const hash = await bcrypt.hash(req.body.newPassword, 10);
     const user = await userModel.User.findByIdAndUpdate(
       req.params.id,
       { $set: { password: hash } },
