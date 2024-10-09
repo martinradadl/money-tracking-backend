@@ -15,8 +15,10 @@ import {
 import { User } from "../models/user";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
 import { currencies } from "../data";
+import { Transaction } from "../models/transaction";
 
 vi.mock("../models/user");
+vi.mock("../models/transaction.ts")
 vi.mock("bcryptjs");
 
 const fakePassword = "fakePassword";
@@ -238,6 +240,8 @@ describe("Authentication and User Controllers", () => {
     });
     it("Should delete User", async () => {
       vi.mocked(User.findByIdAndDelete, true).mockResolvedValue(fakeUser);
+      //@ts-expect-error mocking User.create has an issue with returning types for now we need to leave it as is
+      vi.mocked(Transaction.deleteMany, true).mockImplementation(()=> Promise.resolve());
       const { req, res } = initializeReqResMocks();
       await deleteUser(req, res);
       expect(res.statusCode).toBe(200);
