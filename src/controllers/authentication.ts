@@ -143,6 +143,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 };
 
 export const checkPassword = async (req: Request, res: Response) => {
+  const password = req.headers.password?.toString();
   try {
     const user = await userModel.User.findById(req.params.id);
     if (!user) {
@@ -153,7 +154,8 @@ export const checkPassword = async (req: Request, res: Response) => {
     } else {
       const isCorrectPassword =
         user.password &&
-        (await bcrypt.compare(req.params.password, user.password));
+        password &&
+        (await bcrypt.compare(password, user.password));
       return res.status(200).json(isCorrectPassword);
     }
   } catch (err: unknown) {

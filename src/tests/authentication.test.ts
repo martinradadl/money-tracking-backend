@@ -316,7 +316,7 @@ describe("Authentication and User Controllers", () => {
       );
       const { req, res } = initializeReqResMocks();
       req.params.id = fakeUser._id;
-      req.params.password = fakePassword;
+      req.headers.password = fakePassword;
       await checkPassword(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toBeTruthy();

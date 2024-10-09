@@ -15,7 +15,7 @@ router.put("/:id", tokenVerification, authController.edit);
 router.delete("/:id", tokenVerification, authController.deleteUser);
 router.get("/currencies", authController.getCurrencies);
 router.get(
-  "/:id/check-password/:password",
+  "/:id/check-password",
   tokenVerification,
   authController.checkPassword
 );
