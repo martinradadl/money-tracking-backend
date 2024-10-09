@@ -4,7 +4,6 @@ import { tokenVerification } from "../middleware/authentication";
 
 const router = express.Router();
 
-router.get("/categories", transactionsController.getCategories);
 router.get(
   "/balance/:userId",
   tokenVerification,

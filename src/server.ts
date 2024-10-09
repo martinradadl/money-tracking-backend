@@ -3,6 +3,7 @@ import http from "http";
 import { initMongo } from "./mongo-setup";
 import transactions from "./routes/transactions";
 import auth from "./routes/authentication";
+import categories from "./routes/categories";
 import cors from "cors";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -23,6 +24,7 @@ app.use(cors({ origin: "http://127.0.0.1:5173",credentials: true,}));
 app.use(cookieParser());
 app.use("/transactions", transactions);
 app.use("/auth", auth);
+app.use("/categories", categories);
 app.get("/userAuth", tokenVerification, (_, res) => res.send("User Route"));
 
 // Start the server and listen on the specified port
