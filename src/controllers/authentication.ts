@@ -8,7 +8,7 @@ const jwtSecret = "s5r2hb46d62dhe828393jdsy3";
 export const maxAge = 3 * 60 * 60; // 3hrs in sec
 
 export const register = async (req: Request, res: Response) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, currency } = req.body;
   if (password.length < 6) {
     return res
       .status(400)
@@ -20,6 +20,7 @@ export const register = async (req: Request, res: Response) => {
       name,
       email,
       password: hash,
+      currency,
     });
     const token = jwt.sign({ id: user._id, email }, jwtSecret, {
       expiresIn: maxAge,
@@ -95,25 +96,28 @@ export const edit = async (req: Request, res: Response) => {
 };
 
 export const changePassword = async (req: Request, res: Response) => {
-  if (req.params.password.length < 6) {
+  const newPassword = req.headers.newpassword?.toString();
+  if (newPassword && newPassword.length < 6) {
     return res
       .status(400)
       .json({ message: "Password must have more than 6 characters" });
   }
   try {
-    const hash = await bcrypt.hash(req.params.password, 10);
-    const user = await userModel.User.findByIdAndUpdate(
-      req.params.id,
-      { $set: { password: hash } },
-      { new: true }
-    );
-    if (!user) {
-      return res.status(401).json({
-        message: "Edit not successful",
-        error: "User not found",
-      });
+    if (newPassword) {
+      const hash = await bcrypt.hash(newPassword, 10);
+      const user = await userModel.User.findByIdAndUpdate(
+        req.params.id,
+        { $set: { password: hash } },
+        { new: true }
+      );
+      if (!user) {
+        return res.status(401).json({
+          message: "Edit not successful",
+          error: "User not found",
+        });
+      }
+      return res.status(200).json(user);
     }
-    return res.status(200).json(user);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
@@ -139,6 +143,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 };
 
 export const checkPassword = async (req: Request, res: Response) => {
+  const password = req.headers.password?.toString();
   try {
     const user = await userModel.User.findById(req.params.id);
     if (!user) {
@@ -149,7 +154,8 @@ export const checkPassword = async (req: Request, res: Response) => {
     } else {
       const isCorrectPassword =
         user.password &&
-        (await bcrypt.compare(req.params.password, user.password));
+        password &&
+        (await bcrypt.compare(password, user.password));
       return res.status(200).json(isCorrectPassword);
     }
   } catch (err: unknown) {

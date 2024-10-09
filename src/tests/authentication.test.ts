@@ -255,7 +255,7 @@ describe("Authentication and User Controllers", () => {
         throw mockedCatchError;
       });
       const { req, res } = initializeReqResMocks();
-      req.params.password = newFakePassword;
+      req.headers.newpassword = newFakePassword;
       await changePassword(req, res);
       expect(res.statusCode).toBe(500);
       expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
@@ -264,7 +264,7 @@ describe("Authentication and User Controllers", () => {
     it("should not find userId", async () => {
       vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(null);
       const { req, res } = initializeReqResMocks();
-      req.params.password = newFakePassword;
+      req.headers.newpassword = newFakePassword;
       await changePassword(req, res);
       expect(res.statusCode).toBe(401);
       expect(res._getJSONData()).toEqual({
@@ -275,7 +275,7 @@ describe("Authentication and User Controllers", () => {
     it("Should update password", async () => {
       vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(fakeUser);
       const { req, res } = initializeReqResMocks();
-      req.params.password = newFakePassword;
+      req.headers.newpassword = newFakePassword;
       await changePassword(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeUser);
@@ -316,7 +316,7 @@ describe("Authentication and User Controllers", () => {
       );
       const { req, res } = initializeReqResMocks();
       req.params.id = fakeUser._id;
-      req.params.password = fakePassword;
+      req.headers.password = fakePassword;
       await checkPassword(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toBeTruthy();
