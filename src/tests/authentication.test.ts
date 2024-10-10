@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { jwtSecret, tokenVerification } from "../middleware/authentication";
+import { tokenVerification } from "../middleware/authentication";
 import {
   changePassword,
   checkPassword,
@@ -9,15 +9,17 @@ import {
   edit,
   getCurrencies,
   login,
-  maxAge,
   register,
 } from "../controllers/authentication";
 import { User } from "../models/user";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
 import { currencies } from "../data";
+import { Transaction } from "../models/transaction";
 
 vi.mock("../models/user");
+vi.mock("../models/transaction");
 vi.mock("bcryptjs");
+vi.mock("jsonwebtoken");
 
 const fakePassword = "fakePassword";
 const newFakePassword = "newFakePassword";
@@ -28,13 +30,7 @@ const fakeUser = {
   password: fakePassword,
   currency: { name: "fakeCurrency", code: "FAKE" },
 };
-const fakeToken = jwt.sign(
-  { id: fakeUser._id, email: fakeUser.email },
-  jwtSecret,
-  {
-    expiresIn: maxAge,
-  }
-);
+const fakeToken = "fakeToken";
 
 describe("Authentication Middleware", () => {
   afterEach(() => {
@@ -59,6 +55,7 @@ describe("Authentication Middleware", () => {
 
   it("should tokenVerification invoke next if token is verified", () => {
     const { req, res } = initializeReqResMocks();
+    vi.mocked(jwt, true).verify.mockImplementation(() => mockedNext());
     req.headers.authorization = `Bearer ${fakeToken}`;
     tokenVerification(req, res, mockedNext);
     expect(mockedNext).toHaveBeenCalled();
@@ -97,6 +94,8 @@ describe("Authentication and User Controllers", () => {
       req.body = fakeUser;
       //@ts-expect-error mocking User.create has an issue with returning types for now we need to leave it as is
       vi.mocked(User.create, true).mockResolvedValue(fakeUser);
+      //@ts-expect-error fake token value passed
+      vi.mocked(jwt, true).sign.mockReturnValue(fakeToken);
       await register(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual({
@@ -162,6 +161,8 @@ describe("Authentication and User Controllers", () => {
         Promise.resolve(true)
       );
       vi.mocked(User.findOne, true).mockResolvedValue(fakeUser);
+      //@ts-expect-error fake token value passed
+      vi.mocked(jwt, true).sign.mockReturnValue(fakeToken);
       const { req, res } = initializeReqResMocks();
       req.body = { email: fakeUser.email, password: fakePassword };
       await login(req, res);
@@ -238,6 +239,10 @@ describe("Authentication and User Controllers", () => {
     });
     it("Should delete User", async () => {
       vi.mocked(User.findByIdAndDelete, true).mockResolvedValue(fakeUser);
+      vi.mocked(Transaction.deleteMany, true).mockImplementation(() =>
+        //@ts-expect-error mocking delete transactions from deleted user
+        Promise.resolve()
+      );
       const { req, res } = initializeReqResMocks();
       await deleteUser(req, res);
       expect(res.statusCode).toBe(200);
