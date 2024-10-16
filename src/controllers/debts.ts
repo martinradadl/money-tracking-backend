@@ -41,6 +41,12 @@ export const edit = async (req: Request, res: Response) => {
       { $set: req.body },
       { new: true }
     );
+    if (!debt) {
+      return res.status(401).json({
+        message: "Edit not successful",
+        error: "Debt not found",
+      });
+    }
     const populatedDebt = await debt?.populate("category");
     return res.status(200).json(populatedDebt);
   } catch (err: unknown) {
@@ -53,6 +59,12 @@ export const edit = async (req: Request, res: Response) => {
 export const deleteOne = async (req: Request, res: Response) => {
   try {
     const deletedDebt = await debtModel.Debt.findByIdAndDelete(req.params.id);
+    if (!deletedDebt) {
+      return res.status(401).json({
+        message: "Delete not successful",
+        error: "Debt not found",
+      });
+    }
     return res.status(200).json(deletedDebt);
   } catch (err: unknown) {
     if (err instanceof Error) {
