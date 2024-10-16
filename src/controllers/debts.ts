@@ -42,7 +42,7 @@ export const edit = async (req: Request, res: Response) => {
       { new: true }
     );
     if (!debt) {
-      return res.status(401).json({
+      return res.status(404).json({
         message: "Edit not successful",
         error: "Debt not found",
       });
@@ -60,7 +60,7 @@ export const deleteOne = async (req: Request, res: Response) => {
   try {
     const deletedDebt = await debtModel.Debt.findByIdAndDelete(req.params.id);
     if (!deletedDebt) {
-      return res.status(401).json({
+      return res.status(404).json({
         message: "Delete not successful",
         error: "Debt not found",
       });
