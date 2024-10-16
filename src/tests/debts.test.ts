@@ -4,7 +4,6 @@ import { Debt } from "../models/debt";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
 
 vi.mock("../models/debt.ts");
-vi.mock("../models/category.ts");
 
 const fakeDebt = {
   _id: "fakeId",

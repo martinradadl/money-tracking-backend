@@ -3,7 +3,6 @@ import { getCategories } from "../controllers/categories";
 import { Category } from "../models/category";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
 
-vi.mock("../models/transaction.ts");
 vi.mock("../models/category.ts");
 
 const fakeCategories = [{ _id: "fakeId", label: "fakeLabel" }];
