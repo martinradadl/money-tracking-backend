@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as userModel from "../models/user";
 import * as transactionModel from "../models/transaction";
+import * as debtModel from "../models/debt";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { currencies } from "../data";
@@ -136,6 +137,7 @@ export const deleteUser = async (req: Request, res: Response) => {
       });
     }
     await transactionModel.Transaction.deleteMany({ userId: req.params.id });
+    await debtModel.Debt.deleteMany({ userId: req.params.id });
     return res.status(200).json(deletedUser);
   } catch (err: unknown) {
     if (err instanceof Error) {

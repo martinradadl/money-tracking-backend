@@ -15,9 +15,11 @@ import { User } from "../models/user";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
 import { currencies } from "../data";
 import { Transaction } from "../models/transaction";
+import { Debt } from "../models/debt";
 
 vi.mock("../models/user");
 vi.mock("../models/transaction");
+vi.mock("../models/debt");
 vi.mock("bcryptjs");
 vi.mock("jsonwebtoken");
 
@@ -240,6 +242,10 @@ describe("Authentication and User Controllers", () => {
     it("Should delete User", async () => {
       vi.mocked(User.findByIdAndDelete, true).mockResolvedValue(fakeUser);
       vi.mocked(Transaction.deleteMany, true).mockImplementation(() =>
+        //@ts-expect-error mocking delete transactions from deleted user
+        Promise.resolve()
+      );
+      vi.mocked(Debt.deleteMany, true).mockImplementation(() =>
         //@ts-expect-error mocking delete transactions from deleted user
         Promise.resolve()
       );

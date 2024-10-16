@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import * as transactionModel from "../models/transaction";
-import * as categoryModel from "../models/category";
 import { ObjectId } from "../mongo-setup";
 
 export const getAll = async (req: Request, res: Response) => {
@@ -57,17 +56,6 @@ export const deleteOne = async (req: Request, res: Response) => {
     const deletedTransaction =
       await transactionModel.Transaction.findByIdAndDelete(req.params.id);
     return res.status(200).json(deletedTransaction);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const getCategories = async (_: Request, res: Response) => {
-  try {
-    const categories = await categoryModel.Category.find({});
-    return res.status(200).json(categories);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
