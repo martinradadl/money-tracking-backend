@@ -8,7 +8,7 @@ vi.mock("../models/debt.ts");
 const fakeDebt = {
   _id: "fakeId",
   type: "income",
-  beneficiary: "fakeBeneficiary",
+  entity: "fakeEntity",
   concept: "fakeConcept",
   amount: 100,
   category: "fakeCategory",

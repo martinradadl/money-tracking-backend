@@ -19,7 +19,7 @@ export const create = async (req: Request, res: Response) => {
   try {
     const newDebt = await debtModel.Debt.create({
       type: req.body.type,
-      beneficiary: req.body.beneficiary,
+      entity: req.body.entity,
       concept: req.body.concept,
       amount: req.body.amount,
       category: req.body.category,
