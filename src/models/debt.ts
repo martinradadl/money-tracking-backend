@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const schema = new mongoose.Schema({
   type: String,
-  beneficiary: String,
+  entity: String,
   concept: String,
   amount: Number,
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
