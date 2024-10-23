@@ -1,4 +1,5 @@
 import express from "express";
+import "dotenv/config";
 import http from "http";
 import { initMongo } from "./mongo-setup";
 import transactions from "./routes/transactions";
