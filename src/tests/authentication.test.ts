@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import * as nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { tokenVerification } from "../middleware/authentication";
@@ -7,9 +8,11 @@ import {
   checkPassword,
   deleteUser,
   edit,
+  forgotPassword,
   getCurrencies,
   login,
   register,
+  resetPassword,
 } from "../controllers/authentication";
 import { User } from "../models/user";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
@@ -22,6 +25,7 @@ vi.mock("../models/transaction");
 vi.mock("../models/debt");
 vi.mock("bcryptjs");
 vi.mock("jsonwebtoken");
+vi.mock("nodemailer");
 
 const fakePassword = "fakePassword";
 const newFakePassword = "newFakePassword";
@@ -331,6 +335,90 @@ describe("Authentication and User Controllers", () => {
       await checkPassword(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toBeTruthy();
+    });
+  });
+
+  describe("Forgot Password Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const mockedSendEmail = vi.fn();
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(User.findOne, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await forgotPassword(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("should not find user", async () => {
+      vi.mocked(User.findOne, true).mockResolvedValue(null);
+      const { req, res } = initializeReqResMocks();
+      req.params.email = fakeUser.email;
+      await forgotPassword(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual({
+        message: `Email has been sent to ${fakeUser.email}`,
+      });
+    });
+
+    it("Should send email to user with reset password link", async () => {
+      vi.mocked(User.findOne, true).mockResolvedValue(fakeUser);
+      const { req, res } = initializeReqResMocks();
+      req.params.email = fakeUser.email;
+      //@ts-expect-error fake token value passed
+      vi.mocked(jwt, true).sign.mockReturnValue(fakeToken);
+      //@ts-expect-error fake token value passed
+      vi.mocked(nodemailer, true).createTransport.mockImplementationOnce(() => {
+        return { sendMail: mockedSendEmail };
+      });
+      await forgotPassword(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual({
+        message: `Email has been sent to ${fakeUser.email}`,
+      });
+    });
+  });
+
+  describe("Reset Password Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(User.findByIdAndUpdate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      req.headers.newpassword = newFakePassword;
+      await resetPassword(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("should not find user", async () => {
+      vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(null);
+      const { req, res } = initializeReqResMocks();
+      req.headers.newpassword = newFakePassword;
+      await resetPassword(req, res);
+      expect(res.statusCode).toBe(401);
+      expect(res._getJSONData()).toEqual({
+        message: "Password change not successful",
+        error: "User not found",
+      });
+    });
+
+    it("Should reset password", async () => {
+      vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(fakeUser);
+      const { req, res } = initializeReqResMocks();
+      req.headers.newpassword = newFakePassword;
+      await resetPassword(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeUser);
     });
   });
 

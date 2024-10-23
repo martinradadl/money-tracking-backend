@@ -19,7 +19,7 @@ router.get(
   tokenVerification,
   authController.checkPassword
 );
-router.patch("/forgot-password/:email", authController.forgotPassword);
+router.get("/forgot-password/:email", authController.forgotPassword);
 router.put(
   "/reset-password/:id",
   tokenVerification,
