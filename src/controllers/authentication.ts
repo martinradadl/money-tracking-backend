@@ -7,11 +7,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { currencies } from "../data";
 
-const jwtSecret = "s5r2hb46d62dhe828393jdsy3";
+const jwtSecret = process.env.JWT_SECRET;
 const emailSender = {
-  email: "martinrprojects@gmail.com",
-  password: "ubfu gvuv zadp zabz",
+  email: process.env.SENDER_EMAIL,
+  password: process.env.SENDER_PASSWORD,
 };
+
 export const maxAge = 3 * 60 * 60; // 3hrs in sec
 
 export const register = async (req: Request, res: Response) => {
@@ -29,7 +30,8 @@ export const register = async (req: Request, res: Response) => {
       password: hash,
       currency,
     });
-    const token = jwt.sign({ id: user._id, email }, jwtSecret, {
+    //TODO improve ENV variables checking
+    const token = jwt.sign({ id: user._id, email }, jwtSecret || "", {
       expiresIn: maxAge,
     });
 
@@ -62,7 +64,8 @@ export const login = async (req: Request, res: Response) => {
       });
     } else {
       if (user.password && (await bcrypt.compare(password, user.password))) {
-        const token = jwt.sign({ id: user._id, email }, jwtSecret, {
+        //TODO improve ENV variables checking
+        const token = jwt.sign({ id: user._id, email }, jwtSecret || "", {
           expiresIn: maxAge, // 3hrs in sec
         });
         res.status(200).json({
@@ -176,19 +179,20 @@ export const checkPassword = async (req: Request, res: Response) => {
 
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
-    const user = await userModel.User.findOne({ email: req.params.email });
+    const email = req.params.email;
+    const user = await userModel.User.findOne({ email });
 
     if (!user) {
       return res.status(200).json({
-        message: `Email has been sent to ${req.params.email}`,
+        message: `Email has been sent to ${email}`,
       });
     } else {
-      const token = jwt.sign({ id: user._id }, jwtSecret, {
+      //TODO improve ENV variables checking
+      const token = jwt.sign({ id: user._id }, jwtSecret || "", {
         expiresIn: maxAge,
       });
-
       const port = "5173";
-      const link = `http://127.0.0.1:${port}/reset-password/${user._id}/${token}`;
+      const link = `http://127.0.0.1:${port}/reset-password/?userId=${user._id}&token=${token}`;
 
       const transporter = nodemailer.createTransport({
         service: "Gmail",
@@ -205,7 +209,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
         from: emailSender.email,
         to: user.email,
         subject: "Reset Password from Money Tracking",
-        text: `Hi ${user.name}, you have forgotten your password. Don't worry, just click on this link: ${link}. If you didn't request this, omit this email.`,
+        html: `<h1>Reset Password</h1><p>Hi ${user.name}, you have forgotten your password. Don't worry, just click on this button</p><a href="${link}"><button>Reset Password</button></a>`,
       };
 
       transporter.sendMail(mailOptions, (error, info) => {
@@ -217,11 +221,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
       });
 
       return res.status(200).json({
-        message: `Email has been sent to ${req.params.email}`,
+        message: `Email has been sent to ${email}`,
       });
     }
   } catch (err: unknown) {
     if (err instanceof Error) {
+      console.log("catch: ", err);
       return res.status(500).json({ message: err.message });
     }
   }
