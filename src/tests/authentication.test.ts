@@ -370,9 +370,9 @@ describe("Authentication and User Controllers", () => {
       vi.mocked(User.findOne, true).mockResolvedValue(fakeUser);
       const { req, res } = initializeReqResMocks();
       req.params.email = fakeUser.email;
-      //@ts-expect-error fake token value passed
+      //@ts-expect-error types of mock doesn't match with real function
       vi.mocked(jwt, true).sign.mockReturnValue(fakeToken);
-      //@ts-expect-error fake token value passed
+      //@ts-expect-error types of mock doesn't match with real function
       vi.mocked(nodemailer, true).createTransport.mockImplementationOnce(() => {
         return { sendMail: mockedSendEmail };
       });
