@@ -7,7 +7,8 @@
     "test": "vitest --run",
     "test:dev": "vitest --run --printConsoleTrace --coverage",
     "test:ui": "vitest --ui --coverage",
-    "start": "ts-node src/server.ts",
+    "dev": "ts-node src/server.ts",
+    "start": "node dist/src/server.js",
     "build": "tsc",
     "lint": "oxlint && eslint . --max-warnings 0",
     "prepare": "husky"
