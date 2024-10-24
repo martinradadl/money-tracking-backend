@@ -38,3 +38,5 @@ httpServer.listen(port, () => {
 
 export const shutdownServer = (callback: (error?: Error) => void) =>
   httpServer && httpServer.close(callback);
+
+module.exports = app;
