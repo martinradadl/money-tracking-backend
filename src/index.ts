@@ -24,6 +24,7 @@ initMongo().catch(console.dir);
 app.use(jsonParser);
 app.use(cors({ origin: "http://127.0.0.1:5173", credentials: true }));
 app.use(cookieParser());
+app.get("/", (_, res) => res.send("Express on Vercel"));
 app.use("/transactions", transactions);
 app.use("/auth", auth);
 app.use("/categories", categories);
