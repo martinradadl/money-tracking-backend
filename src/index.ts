@@ -10,6 +10,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { tokenVerification } from "./middleware/authentication";
+import { APP_URL } from "./helpers";
 
 const jsonParser = bodyParser.json();
 // Create an Express application
@@ -22,7 +23,7 @@ const port = 3000;
 initMongo().catch(console.dir);
 
 app.use(jsonParser);
-app.use(cors({ origin: "http://127.0.0.1:5173", credentials: true }));
+app.use(cors({ origin: APP_URL, credentials: true }));
 app.use(cookieParser());
 app.get("/", (_, res) => res.send("Express on Vercel"));
 app.use("/transactions", transactions);

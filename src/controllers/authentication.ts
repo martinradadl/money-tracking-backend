@@ -6,6 +6,7 @@ import * as nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { currencies } from "../data";
+import { APP_URL } from "../helpers";
 
 const jwtSecret = process.env.JWT_SECRET;
 const emailSender = {
@@ -191,8 +192,8 @@ export const forgotPassword = async (req: Request, res: Response) => {
       const token = jwt.sign({ id: user._id }, jwtSecret || "", {
         expiresIn: maxAge,
       });
-      const port = "5173";
-      const link = `http://127.0.0.1:${port}/reset-password/?userId=${user._id}&token=${token}`;
+
+      const link = `${APP_URL}/reset-password/?userId=${user._id}&token=${token}`;
 
       const transporter = nodemailer.createTransport({
         service: "Gmail",
