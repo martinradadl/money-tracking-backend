@@ -18,7 +18,7 @@ const app = express();
 const httpServer = http.createServer(app);
 
 // Set the port number for the server
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 initMongo().catch(console.dir);
 
