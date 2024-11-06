@@ -23,7 +23,7 @@ const port = process.env.PORT || 3000;
 initMongo().catch(console.dir);
 
 app.use(jsonParser);
-app.use(cors({ origin: APP_URL, credentials: true }));
+app.use(cors({ origin: APP_URL }));
 app.use(cookieParser());
 app.get("/", (_, res) => res.send("Express on Vercel"));
 app.use("/transactions", transactions);
