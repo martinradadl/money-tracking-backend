@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as debtModel from "../models/debt";
+import { ObjectId } from "../mongo-setup";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
@@ -66,6 +67,38 @@ export const deleteOne = async (req: Request, res: Response) => {
       });
     }
     return res.status(200).json(deletedDebt);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+};
+
+export const getBalance = async (req: Request, res: Response) => {
+  try {
+    const debtsAgg = await debtModel.Debt.aggregate([
+      {
+        $match: {
+          userId: new ObjectId(req.params.userId),
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          balance: {
+            $sum: {
+              $cond: [
+                { $eq: ["$type", "loan"] },
+                "$amount",
+                { $multiply: ["$amount", -1] },
+              ],
+            },
+          },
+        },
+      },
+    ]);
+    const balance = debtsAgg[0]?.balance || 0;
+    return res.status(200).json(balance);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
