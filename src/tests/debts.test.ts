@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { create, deleteOne, edit, getAll } from "../controllers/debts";
+import {
+  create,
+  deleteOne,
+  edit,
+  getAll,
+  getBalance,
+} from "../controllers/debts";
 import { Debt } from "../models/debt";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
 
@@ -14,6 +20,8 @@ const fakeDebt = {
   category: "fakeCategory",
   userId: "fakeUserId",
 };
+
+const fakeAggregates = [{ _id: null, balance: fakeDebt.amount }];
 
 describe("Debts Controller", () => {
   describe("Create Debt Controller", async () => {
@@ -123,5 +131,29 @@ describe("Debts Controller", () => {
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeDebt);
     });
+  });
+});
+
+describe("Get Balance Controller", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("should return 500 when error is throwed", async () => {
+    vi.mocked(Debt.aggregate, true).mockImplementation(() => {
+      throw mockedCatchError;
+    });
+    const { req, res } = initializeReqResMocks();
+    await getBalance(req, res);
+    expect(res.statusCode).toBe(500);
+    expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+  });
+
+  it("Should Get Balance", async () => {
+    vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
+    const { req, res } = initializeReqResMocks();
+    await getBalance(req, res);
+    expect(res.statusCode).toBe(200);
+    expect(res._getJSONData()).toEqual(fakeDebt.amount);
   });
 });

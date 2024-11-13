@@ -4,6 +4,7 @@ import { tokenVerification } from "../middleware/authentication";
 
 const router = express.Router();
 
+router.get("/balance/:userId", tokenVerification, debtsController.getBalance);
 router.get("/:userId", tokenVerification, debtsController.getAll);
 router.post("/", tokenVerification, debtsController.create);
 router.put("/:id", tokenVerification, debtsController.edit);
