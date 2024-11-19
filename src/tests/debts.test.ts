@@ -7,21 +7,19 @@ import {
   getBalance,
 } from "../controllers/debts";
 import { Debt } from "../models/debt";
-import { initializeReqResMocks, mockedCatchError } from "./utils";
+import {
+  defaultGetAllQueryObject,
+  initializeReqResMocks,
+  mockedCatchError,
+} from "./utils";
+import {
+  fakeAggregates,
+  fakeDebt,
+  fakeDebtsList,
+  getDebtsPage,
+} from "./fake-data/debts";
 
 vi.mock("../models/debt.ts");
-
-const fakeDebt = {
-  _id: "fakeId",
-  type: "income",
-  entity: "fakeEntity",
-  concept: "fakeConcept",
-  amount: 100,
-  category: "fakeCategory",
-  userId: "fakeUserId",
-};
-
-const fakeAggregates = [{ _id: null, balance: fakeDebt.amount }];
 
 describe("Debts Controller", () => {
   describe("Create Debt Controller", async () => {
@@ -70,14 +68,27 @@ describe("Debts Controller", () => {
     });
 
     it("Should return 200 and get Debts", async () => {
+      const result = getDebtsPage();
       //@ts-expect-error Unsolved error with mockImplementation function
       vi.mocked(Debt.find, true).mockImplementation(() => {
-        return { populate: () => [fakeDebt] };
+        return defaultGetAllQueryObject(result);
       });
       const { req, res } = initializeReqResMocks();
       await getAll(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual([fakeDebt]);
+      expect(res._getJSONData()).toEqual(fakeDebtsList);
+    });
+
+    it("Should return 200 and get Debts in a given page and limit", async () => {
+      const result = getDebtsPage(2, 1);
+      //@ts-expect-error Unsolved error with mockImplementation function
+      vi.mocked(Debt.find, true).mockImplementation(() => {
+        return defaultGetAllQueryObject(result);
+      });
+      const { req, res } = initializeReqResMocks();
+      await getAll(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(result);
     });
   });
 

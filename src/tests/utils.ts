@@ -7,3 +7,21 @@ export const initializeReqResMocks = () => {
   const res = createResponse({});
   return { req, res };
 };
+
+export const defaultGetAllQueryObject = (
+  result: Array<Record<string, unknown>>
+) => {
+  return {
+    limit: () => {
+      return {
+        skip: () => {
+          return {
+            populate: () => {
+              return result;
+            },
+          };
+        },
+      };
+    },
+  };
+};

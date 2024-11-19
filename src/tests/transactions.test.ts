@@ -7,21 +7,20 @@ import {
   getBalance,
 } from "../controllers/transactions";
 import { Transaction } from "../models/transaction";
-import { initializeReqResMocks, mockedCatchError } from "./utils";
+import {
+  defaultGetAllQueryObject,
+  initializeReqResMocks,
+  mockedCatchError,
+} from "./utils";
+import {
+  fakeAggregates,
+  fakeTransaction,
+  fakeTransactionsList,
+  getTransactionsPage,
+} from "./fake-data/transactions";
 
 vi.mock("../models/transaction.ts");
 vi.mock("../models/category.ts");
-
-const fakeTransaction = {
-  _id: "fakeId",
-  type: "income",
-  concept: "fakeConcept",
-  amount: 100,
-  category: "fakeCategory",
-  userId: "fakeUserId",
-};
-
-const fakeAggregates = [{ _id: null, balance: fakeTransaction.amount }];
 
 describe("Transactions Controller", () => {
   describe("Create Transaction Controller", async () => {
@@ -70,14 +69,27 @@ describe("Transactions Controller", () => {
     });
 
     it("Should return 200 and get Transactions", async () => {
+      const result = getTransactionsPage();
       //@ts-expect-error Unsolved error with mockImplementation function
       vi.mocked(Transaction.find, true).mockImplementation(() => {
-        return { populate: () => [fakeTransaction] };
+        return defaultGetAllQueryObject(result);
       });
       const { req, res } = initializeReqResMocks();
       await getAll(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual([fakeTransaction]);
+      expect(res._getJSONData()).toEqual(fakeTransactionsList);
+    });
+
+    it("Should return 200 and get Transactions in a given page and limit", async () => {
+      const result = getTransactionsPage(2, 1);
+      //@ts-expect-error Unsolved error with mockImplementation function
+      vi.mocked(Transaction.find, true).mockImplementation(() => {
+        return defaultGetAllQueryObject(result);
+      });
+      const { req, res } = initializeReqResMocks();
+      await getAll(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(result);
     });
   });
 
