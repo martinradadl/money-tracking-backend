@@ -37,20 +37,3 @@ export const getDebtsPage = (limit?: number, page?: number) => {
     ? fakeDebtsList
     : fakeDebtsList.slice((page - 1) * limit, (page - 1) * limit + limit + 1);
 };
-
-//   {
-//     limit: () => {
-//       return {
-//         skip: () => {
-//           return {
-//             populate: () => {
-//               return fakeDebtsList.slice(
-//                 (page - 1) * limit,
-//                 (page - 1) * limit + limit + 1
-//               );
-//             },
-//           };
-//         },
-//       };
-//     },
-//   };
