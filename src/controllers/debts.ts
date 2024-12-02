@@ -4,9 +4,14 @@ import { ObjectId } from "../mongo-setup";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
+    const page = parseInt(req.query?.page as string) || 1;
+    const limit = parseInt(req.query?.limit as string) || 0;
+
     const debts = await debtModel.Debt.find({
       userId: req.params.userId,
-    }).populate("category");
+    })
+      .limit(limit).skip((page - 1) * limit)
+      .populate("category");
     return res.status(200).json(debts);
   } catch (err: unknown) {
     console.log(err);
