@@ -5,12 +5,14 @@ import {
   edit,
   getAll,
   getBalance,
+  calculateBalance,
 } from "../controllers/transactions";
 import { Transaction } from "../models/transaction";
 import {
   defaultGetAllQueryObject,
   initializeReqResMocks,
   mockedCatchError,
+  fakeObjectId,
 } from "./utils";
 import {
   fakeAggregates,
@@ -144,6 +146,28 @@ describe("Transactions Controller", () => {
       await deleteOne(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeTransaction);
+    });
+  });
+
+  describe("Calculate Balance Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should error been throwed", async () => {
+      vi.mocked(Transaction.aggregate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      //@ts-expect-error Unsolved error with ObjectId
+      const result = await calculateBalance(fakeObjectId);
+      expect(result).toEqual(mockedCatchError);
+    });
+
+    it("Should calculate Balance", async () => {
+      vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
+      //@ts-expect-error Unsolved error with ObjectId
+      const result = await calculateBalance(fakeObjectId);
+      expect(result).toEqual(fakeTransaction.amount);
     });
   });
 

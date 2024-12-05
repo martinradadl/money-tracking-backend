@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as debtModel from "../models/debt";
-import { ObjectId } from "../mongo-setup";
+import { ObjectId, ObjectIdI } from "../mongo-setup";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
@@ -10,7 +10,8 @@ export const getAll = async (req: Request, res: Response) => {
     const debts = await debtModel.Debt.find({
       userId: req.params.userId,
     })
-      .limit(limit).skip((page - 1) * limit)
+      .limit(limit)
+      .skip((page - 1) * limit)
       .populate("category");
     return res.status(200).json(debts);
   } catch (err: unknown) {
@@ -79,12 +80,12 @@ export const deleteOne = async (req: Request, res: Response) => {
   }
 };
 
-export const getBalance = async (req: Request, res: Response) => {
+export const calculateBalance = async (userId: ObjectIdI) => {
   try {
     const debtsAgg = await debtModel.Debt.aggregate([
       {
         $match: {
-          userId: new ObjectId(req.params.userId),
+          userId,
         },
       },
       {
@@ -103,6 +104,20 @@ export const getBalance = async (req: Request, res: Response) => {
       },
     ]);
     const balance = debtsAgg[0]?.balance || 0;
+    return balance;
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return err;
+    }
+  }
+};
+
+export const getBalance = async (req: Request, res: Response) => {
+  try {
+    const balance = await calculateBalance(new ObjectId(req.params.userId));
+    if (balance instanceof Error) {
+      throw balance;
+    }
     return res.status(200).json(balance);
   } catch (err: unknown) {
     if (err instanceof Error) {
