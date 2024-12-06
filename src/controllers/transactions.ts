@@ -68,12 +68,12 @@ export const deleteOne = async (req: Request, res: Response) => {
   }
 };
 
-export const getBalance = async (req: Request, res: Response) => {
+export const calculateBalance = async (userId: string) => {
   try {
     const transactionsAgg = await transactionModel.Transaction.aggregate([
       {
         $match: {
-          userId: new ObjectId(req.params.userId),
+          userId: new ObjectId(userId),
         },
       },
       {
@@ -92,6 +92,20 @@ export const getBalance = async (req: Request, res: Response) => {
       },
     ]);
     const balance = transactionsAgg[0]?.balance || 0;
+    return balance;
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return err;
+    }
+  }
+};
+
+export const getBalance = async (req: Request, res: Response) => {
+  try {
+    const balance = await calculateBalance(req.params.userId);
+    if (balance instanceof Error) {
+      throw balance;
+    }
     return res.status(200).json(balance);
   } catch (err: unknown) {
     if (err instanceof Error) {

@@ -5,10 +5,12 @@ import {
   edit,
   getAll,
   getBalance,
+  calculateBalance,
 } from "../controllers/debts";
 import { Debt } from "../models/debt";
 import {
   defaultGetAllQueryObject,
+  fakeObjectId,
   initializeReqResMocks,
   mockedCatchError,
 } from "./utils";
@@ -143,28 +145,50 @@ describe("Debts Controller", () => {
       expect(res._getJSONData()).toEqual(fakeDebt);
     });
   });
-});
 
-describe("Get Balance Controller", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("should return 500 when error is throwed", async () => {
-    vi.mocked(Debt.aggregate, true).mockImplementation(() => {
-      throw mockedCatchError;
+  describe("Calculate Balance Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
     });
-    const { req, res } = initializeReqResMocks();
-    await getBalance(req, res);
-    expect(res.statusCode).toBe(500);
-    expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+
+    it("should error been throwed", async () => {
+      vi.mocked(Debt.aggregate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      //@ts-expect-error Unsolved error with ObjectId
+      const result = await calculateBalance(fakeObjectId);
+      expect(result).toEqual(mockedCatchError);
+    });
+
+    it("Should calculate Balance", async () => {
+      vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
+      //@ts-expect-error Unsolved error with ObjectId
+      const result = await calculateBalance(fakeObjectId);
+      expect(result).toEqual(fakeDebt.amount);
+    });
   });
 
-  it("Should Get Balance", async () => {
-    vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
-    const { req, res } = initializeReqResMocks();
-    await getBalance(req, res);
-    expect(res.statusCode).toBe(200);
-    expect(res._getJSONData()).toEqual(fakeDebt.amount);
+  describe("Get Balance Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(Debt.aggregate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await getBalance(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should Get Balance", async () => {
+      vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
+      const { req, res } = initializeReqResMocks();
+      await getBalance(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeDebt.amount);
+    });
   });
 });
