@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as debtModel from "../models/debt";
-import { ObjectId, ObjectIdI } from "../mongo-setup";
+import { ObjectId } from "../mongo-setup";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
@@ -80,12 +80,12 @@ export const deleteOne = async (req: Request, res: Response) => {
   }
 };
 
-export const calculateBalance = async (userId: ObjectIdI) => {
+export const calculateBalance = async (userId: string) => {
   try {
     const debtsAgg = await debtModel.Debt.aggregate([
       {
         $match: {
-          userId,
+          userId: new ObjectId(userId),
         },
       },
       {
@@ -114,7 +114,7 @@ export const calculateBalance = async (userId: ObjectIdI) => {
 
 export const getBalance = async (req: Request, res: Response) => {
   try {
-    const balance = await calculateBalance(new ObjectId(req.params.userId));
+    const balance = await calculateBalance(req.params.userId);
     if (balance instanceof Error) {
       throw balance;
     }

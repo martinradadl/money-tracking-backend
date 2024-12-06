@@ -11,6 +11,6 @@ export async function initMongo() {
   }
 }
 
-export const ObjectId = mongoose.Schema.Types.ObjectId;
+export const ObjectId = mongoose.Types.ObjectId;
 
 export type ObjectIdI = mongoose.ObjectId;

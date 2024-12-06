@@ -1,20 +1,15 @@
 import { calculateBalance } from "./transactions";
 import { calculateBalance as calculateDebtsBalance } from "./debts";
 import { Request, Response } from "express";
-import { ObjectId } from "../mongo-setup";
 
 export const getTotalBalance = async (req: Request, res: Response) => {
   try {
-    const transactionsBalance = await calculateBalance(
-      new ObjectId(req.params.userId)
-    );
+    const transactionsBalance = await calculateBalance(req.params.userId);
     if (transactionsBalance instanceof Error) {
       throw transactionsBalance;
     }
 
-    const debtsBalance = await calculateDebtsBalance(
-      new ObjectId(req.params.userId)
-    );
+    const debtsBalance = await calculateDebtsBalance(req.params.userId);
     if (debtsBalance instanceof Error) {
       throw debtsBalance;
     }
