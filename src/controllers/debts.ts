@@ -80,7 +80,7 @@ export const deleteOne = async (req: Request, res: Response) => {
   }
 };
 
-const calculateSumByTpe = async (userId: string, isIncome: boolean) => {
+const calculateSumByTpe = async (userId: string, isLoans: boolean) => {
   try {
     const debtsAgg = await debtModel.Debt.aggregate([
       {
@@ -94,13 +94,9 @@ const calculateSumByTpe = async (userId: string, isIncome: boolean) => {
           sum: {
             $sum: {
               $cond: [
-                isIncome,
-                {
-                  $cond: [{ $eq: ["$type", "loan"] }, "$amount", 0],
-                },
-                {
-                  $cond: [{ $eq: ["$type", "debt"] }, "$amount", 0],
-                },
+                { $eq: ["$type", isLoans ? "loan" : "debt"] },
+                "$amount",
+                0,
               ],
             },
           },

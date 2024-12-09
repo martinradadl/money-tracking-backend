@@ -82,13 +82,9 @@ const calculateSumByTpe = async (userId: string, isIncome: boolean) => {
           sum: {
             $sum: {
               $cond: [
-                isIncome,
-                {
-                  $cond: [{ $eq: ["$type", "income"] }, "$amount", 0],
-                },
-                {
-                  $cond: [{ $eq: ["$type", "expenses"] }, "$amount", 0],
-                },
+                { $eq: ["$type", isIncome ? "income" : "expenses"] },
+                "$amount",
+                0,
               ],
             },
           },
