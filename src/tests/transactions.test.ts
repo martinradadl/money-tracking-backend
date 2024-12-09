@@ -6,6 +6,8 @@ import {
   getAll,
   getBalance,
   calculateBalance,
+  getTotalIncome,
+  getTotalExpenses,
 } from "../controllers/transactions";
 import { Transaction } from "../models/transaction";
 import {
@@ -190,6 +192,54 @@ describe("Transactions Controller", () => {
       vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
       const { req, res } = initializeReqResMocks();
       await getBalance(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeTransaction.amount);
+    });
+  });
+
+  describe("Get Total Income Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(Transaction.aggregate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await getTotalIncome(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should Get Balance", async () => {
+      vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
+      const { req, res } = initializeReqResMocks();
+      await getTotalIncome(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeTransaction.amount);
+    });
+  });
+
+  describe("Get Total Expenses Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(Transaction.aggregate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await getTotalExpenses(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should Get Total Expenses", async () => {
+      vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
+      const { req, res } = initializeReqResMocks();
+      await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeTransaction.amount);
     });
