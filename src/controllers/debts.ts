@@ -80,6 +80,66 @@ export const deleteOne = async (req: Request, res: Response) => {
   }
 };
 
+const calculateSumByTpe = async (userId: string, isLoans: boolean) => {
+  try {
+    const debtsAgg = await debtModel.Debt.aggregate([
+      {
+        $match: {
+          userId: new ObjectId(userId),
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          sum: {
+            $sum: {
+              $cond: [
+                { $eq: ["$type", isLoans ? "loan" : "debt"] },
+                "$amount",
+                0,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+    const sum = debtsAgg[0]?.sum || 0;
+    return sum;
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return err;
+    }
+  }
+};
+
+export const getTotalLoans = async (req: Request, res: Response) => {
+  try {
+    const balance = await calculateSumByTpe(req.params.userId, true);
+    if (balance instanceof Error) {
+      throw balance;
+    }
+    return res.status(200).json(balance);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+};
+
+export const getTotalDebts = async (req: Request, res: Response) => {
+  try {
+    const balance = await calculateSumByTpe(req.params.userId, false);
+    if (balance instanceof Error) {
+      throw balance;
+    }
+    return res.status(200).json(balance);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+};
+
 export const calculateBalance = async (userId: string) => {
   try {
     const debtsAgg = await debtModel.Debt.aggregate([

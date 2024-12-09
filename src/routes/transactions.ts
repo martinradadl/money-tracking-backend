@@ -9,6 +9,16 @@ router.get(
   tokenVerification,
   transactionsController.getBalance
 );
+router.get(
+  "/balance/income/:userId",
+  tokenVerification,
+  transactionsController.getTotalIncome
+);
+router.get(
+  "/balance/expenses/:userId",
+  tokenVerification,
+  transactionsController.getTotalExpenses
+);
 router.get("/:userId", tokenVerification, transactionsController.getAll);
 router.post("/", tokenVerification, transactionsController.create);
 router.put("/:id", tokenVerification, transactionsController.edit);

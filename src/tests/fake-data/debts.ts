@@ -30,7 +30,9 @@ export const fakeDebt3 = {
 
 export const fakeDebtsList = [fakeDebt, fakeDebt2, fakeDebt3];
 
-export const fakeAggregates = [{ _id: null, balance: fakeDebt.amount }];
+export const fakeAggregates = [
+  { _id: null, balance: fakeDebt.amount, sum: fakeDebt.amount },
+];
 
 export const getDebtsPage = (limit?: number, page?: number) => {
   return !limit || !page

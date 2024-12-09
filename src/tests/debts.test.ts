@@ -6,6 +6,8 @@ import {
   getAll,
   getBalance,
   calculateBalance,
+  getTotalLoans,
+  getTotalDebts,
 } from "../controllers/debts";
 import { Debt } from "../models/debt";
 import {
@@ -187,6 +189,54 @@ describe("Debts Controller", () => {
       vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
       const { req, res } = initializeReqResMocks();
       await getBalance(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeDebt.amount);
+    });
+  });
+
+  describe("Get Total Debts Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(Debt.aggregate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await getTotalDebts(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should Get Total Debts", async () => {
+      vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
+      const { req, res } = initializeReqResMocks();
+      await getTotalDebts(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeDebt.amount);
+    });
+  });
+
+  describe("Get Total Loans Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(Debt.aggregate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await getTotalLoans(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should Get Total Loans", async () => {
+      vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
+      const { req, res } = initializeReqResMocks();
+      await getTotalLoans(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeDebt.amount);
     });
