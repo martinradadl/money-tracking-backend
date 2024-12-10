@@ -2,7 +2,7 @@ name: Important Checks
 on:
   pull_request:
     branches:
-      - main
+      - master
 jobs:
   test:
     timeout-minutes: 30
