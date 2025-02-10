@@ -40,6 +40,7 @@ export const register = async (req: Request, res: Response) => {
       message: "User successfully created",
       user,
       token,
+      expiration: maxAge,
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -73,6 +74,7 @@ export const login = async (req: Request, res: Response) => {
           message: "Login successful",
           user,
           token,
+          expiration: maxAge,
         });
       } else {
         res.status(400).json({ message: "Login not successful" });
@@ -227,7 +229,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.log("catch: ", err);
       return res.status(500).json({ message: err.message });
     }
   }

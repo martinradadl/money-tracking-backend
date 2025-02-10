@@ -108,6 +108,7 @@ describe("Authentication and User Controllers", () => {
         message: "User successfully created",
         user: fakeUser,
         token: fakeToken,
+        expiration: expect.any(Number),
       });
     });
   });
@@ -177,6 +178,7 @@ describe("Authentication and User Controllers", () => {
         message: "Login successful",
         user: fakeUser,
         token: fakeToken,
+        expiration: expect.any(Number),
       });
     });
   });
