@@ -15,7 +15,6 @@ export const getAll = async (req: Request, res: Response) => {
       .populate("category");
     return res.status(200).json(debts);
   } catch (err: unknown) {
-    console.log(err);
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
     }
