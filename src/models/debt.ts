@@ -6,6 +6,7 @@ const schema = new mongoose.Schema({
   concept: String,
   amount: Number,
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+  date: Date,
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
