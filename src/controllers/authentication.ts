@@ -5,8 +5,9 @@ import * as debtModel from "../models/debt";
 import * as nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { currencies } from "../data";
+import { currencies } from "../data/currencies";
 import { APP_URL } from "../helpers";
+import { timezones } from "../data/timezones";
 
 const jwtSecret = process.env.JWT_SECRET;
 const emailSender = {
@@ -17,7 +18,7 @@ const emailSender = {
 export const maxAge = 3 * 60 * 60; // 3hrs in sec
 
 export const register = async (req: Request, res: Response) => {
-  const { name, email, password, currency } = req.body;
+  const { name, email, password, currency, timezone } = req.body;
   if (password.length < 6) {
     return res
       .status(400)
@@ -30,6 +31,7 @@ export const register = async (req: Request, res: Response) => {
       email,
       password: hash,
       currency,
+      timezone,
     });
     //TODO improve ENV variables checking
     const token = jwt.sign({ id: user._id, email }, jwtSecret || "", {
@@ -266,4 +268,8 @@ export const resetPassword = async (req: Request, res: Response) => {
 
 export const getCurrencies = (_: Request, res: Response) => {
   return res.json(currencies);
+};
+
+export const getTimeZones = (_: Request, res: Response) => {
+  return res.json(timezones);
 };

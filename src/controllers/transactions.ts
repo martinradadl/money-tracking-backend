@@ -28,6 +28,7 @@ export const create = async (req: Request, res: Response) => {
       concept: req.body.concept,
       amount: req.body.amount,
       category: req.body.category,
+      date: req.body.date,
       userId: req.body.userId,
     });
     const populatedTransaction = await newTransaction.populate("category");

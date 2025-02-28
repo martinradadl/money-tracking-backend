@@ -11,7 +11,8 @@
     "start": "NODE_ENV=production node dist/src/index.js",
     "build": "tsc",
     "lint": "oxlint && eslint . --max-warnings 0",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cleanDB": "ts-node src/db-helpers/index.ts"
   },
   "engines": {
     "npm": ">=10.0.0",
