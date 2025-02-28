@@ -7,7 +7,7 @@ export const deleteAllTransactions = async () => {
     console.info("Deleting transactions...");
     const wereElementsDeleted =
       await transactionModel.Transaction.collection.drop();
-    console.info("Transactions has been deleted? " + wereElementsDeleted);
+    console.info("succeed? " + wereElementsDeleted);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error(err.message);
@@ -19,7 +19,7 @@ export const deleteAllDebts = async () => {
   try {
     console.info("Deleting debts...");
     const wereDebtsDeleted = await debtModel.Debt.collection.drop();
-    console.info("Debts has been deleted? " + wereDebtsDeleted);
+    console.info("succeed? " + wereDebtsDeleted);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error(err.message);
@@ -31,7 +31,7 @@ export const deleteAllUsers = async () => {
   try {
     console.info("Deleting users...");
     const wereUsersDeleted = await userModel.User.collection.drop();
-    console.info("Users has been deleted? " + wereUsersDeleted);
+    console.info("succeed? " + wereUsersDeleted);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error(err.message);
