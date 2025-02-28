@@ -10,15 +10,17 @@ import {
   edit,
   forgotPassword,
   getCurrencies,
+  getTimeZones,
   login,
   register,
   resetPassword,
 } from "../controllers/authentication";
 import { User } from "../models/user";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
-import { currencies } from "../data";
 import { Transaction } from "../models/transaction";
 import { Debt } from "../models/debt";
+import { currencies } from "../data/currencies";
+import { timezones } from "../data/timezones";
 
 vi.mock("../models/user");
 vi.mock("../models/transaction");
@@ -434,6 +436,19 @@ describe("Authentication and User Controllers", () => {
       getCurrencies(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(currencies);
+    });
+  });
+
+  describe("Get Time Zones Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("Should Get Time Zones", async () => {
+      const { req, res } = initializeReqResMocks();
+      getTimeZones(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toStrictEqual(timezones);
     });
   });
 });
