@@ -208,7 +208,7 @@ export const filterByMonth = async (req: Request, res: Response) => {
   try {
     const selectedDate = req.query?.date as string;
     const startDate = new Date(`${selectedDate}-01T00:00:00.000+00:00`);
-    const endDate = addMonths(startDate, 1);
+    const endDate = addDays(addMonths(startDate, 1), 1);
 
     const filteredDebts = await debtModel.Debt.find({
       date: { $gte: startDate, $lt: endDate },
