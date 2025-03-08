@@ -8,6 +8,12 @@ import {
   calculateBalance,
   getTotalLoans,
   getTotalDebts,
+  filterByDay,
+  filterByMonth,
+  filterByYear,
+  filterByCustomDays,
+  filterByCustomMonths,
+  filterByCustomYears,
 } from "../controllers/debts";
 import { Debt } from "../models/debt";
 import {
@@ -239,6 +245,150 @@ describe("Debts Controller", () => {
       await getTotalLoans(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeDebt.amount);
+    });
+  });
+
+  describe("Filter By Day Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("Should return 500 when error is throwed", async () => {
+      vi.mocked(Debt.find, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await filterByDay(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should filter by day", async () => {
+      vi.mocked(Debt.find, true).mockResolvedValue([fakeDebt]);
+      const { req, res } = initializeReqResMocks();
+      await filterByDay(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeDebt]);
+    });
+  });
+
+  describe("Filter By Month Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("Should return 500 when error is throwed", async () => {
+      vi.mocked(Debt.find, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await filterByMonth(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should filter by month", async () => {
+      vi.mocked(Debt.find, true).mockResolvedValue([fakeDebt]);
+      const { req, res } = initializeReqResMocks();
+      await filterByMonth(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeDebt]);
+    });
+  });
+
+  describe("Filter By Year Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("Should return 500 when error is throwed", async () => {
+      vi.mocked(Debt.find, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await filterByYear(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should filter by year", async () => {
+      vi.mocked(Debt.find, true).mockResolvedValue([fakeDebt]);
+      const { req, res } = initializeReqResMocks();
+      await filterByYear(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeDebt]);
+    });
+  });
+
+  describe("Filter By Custom Days Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("Should return 500 when error is throwed", async () => {
+      vi.mocked(Debt.find, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await filterByCustomDays(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should filter by custom days", async () => {
+      vi.mocked(Debt.find, true).mockResolvedValue([fakeDebt]);
+      const { req, res } = initializeReqResMocks();
+      await filterByCustomDays(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeDebt]);
+    });
+  });
+
+  describe("Filter By Custom Months Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("Should return 500 when error is throwed", async () => {
+      vi.mocked(Debt.find, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await filterByCustomMonths(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should filter by custom months", async () => {
+      vi.mocked(Debt.find, true).mockResolvedValue([fakeDebt]);
+      const { req, res } = initializeReqResMocks();
+      await filterByCustomMonths(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeDebt]);
+    });
+  });
+
+  describe("Filter By Custom Years Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("Should return 500 when error is throwed", async () => {
+      vi.mocked(Debt.find, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await filterByCustomYears(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should filter by custom years", async () => {
+      vi.mocked(Debt.find, true).mockResolvedValue([fakeDebt]);
+      const { req, res } = initializeReqResMocks();
+      await filterByCustomYears(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeDebt]);
     });
   });
 });

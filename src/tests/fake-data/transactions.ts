@@ -4,6 +4,7 @@ export const fakeTransaction = {
   concept: "fakeConcept",
   amount: 100,
   category: "fakeCategory",
+  date: "fakeDate1",
   userId: "fakeUserId",
 };
 
@@ -13,6 +14,7 @@ export const fakeTransaction2 = {
   concept: "fakeConcept2",
   amount: 200,
   category: "fakeCategory2",
+  date: "fakeDate2",
   userId: "fakeUserId2",
 };
 
@@ -22,6 +24,7 @@ export const fakeTransaction3 = {
   concept: "fakeConcept3",
   amount: 300,
   category: "fakeCategory3",
+  date: "fakeDate3",
   userId: "fakeUserId3",
 };
 
