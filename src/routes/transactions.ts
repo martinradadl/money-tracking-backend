@@ -5,17 +5,12 @@ import { tokenVerification } from "../middleware/authentication";
 const router = express.Router();
 
 router.get(
-  "/balance/:userId",
-  tokenVerification,
-  transactionsController.getBalance
-);
-router.get(
-  "/balance/income/:userId",
+  "/:userId/balance/income",
   tokenVerification,
   transactionsController.getTotalIncome
 );
 router.get(
-  "/balance/expenses/:userId",
+  "/:userId/balance/expenses",
   tokenVerification,
   transactionsController.getTotalExpenses
 );
