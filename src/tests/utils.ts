@@ -1,5 +1,5 @@
 import { createRequest, createResponse } from "node-mocks-http";
-import mongoose  from "mongoose";
+import mongoose from "mongoose";
 
 export const mockedCatchError = new Error("Error");
 

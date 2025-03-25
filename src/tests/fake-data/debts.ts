@@ -1,6 +1,6 @@
 export const fakeDebt = {
   _id: "fakeId",
-  type: "income",
+  type: "loan",
   entity: "fakeEntity",
   concept: "fakeConcept",
   amount: 100,
@@ -11,7 +11,7 @@ export const fakeDebt = {
 
 export const fakeDebt2 = {
   _id: "fakeId2",
-  type: "income",
+  type: "loan",
   entity: "fakeEntity2",
   concept: "fakeConcept2",
   amount: 200,
@@ -22,7 +22,7 @@ export const fakeDebt2 = {
 
 export const fakeDebt3 = {
   _id: "fakeId3",
-  type: "income",
+  type: "loan",
   entity: "fakeEntity3",
   concept: "fakeConcept3",
   amount: 300,
