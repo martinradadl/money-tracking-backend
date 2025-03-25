@@ -6,7 +6,7 @@ import * as nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { currencies } from "../data/currencies";
-import { APP_URL } from "../helpers";
+import { APP_URL } from "../helpers/global";
 import { timezones } from "../data/timezones";
 
 const jwtSecret = process.env.JWT_SECRET;

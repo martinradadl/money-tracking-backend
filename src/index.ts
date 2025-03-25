@@ -10,7 +10,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { tokenVerification } from "./middleware/authentication";
-import { APP_URL } from "./helpers";
+import { APP_URL } from "./helpers/global";
 
 const jsonParser = bodyParser.json();
 // Create an Express application
