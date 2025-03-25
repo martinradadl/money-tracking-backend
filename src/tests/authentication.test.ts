@@ -16,6 +16,12 @@ import {
   resetPassword,
 } from "../controllers/authentication";
 import { User } from "../models/user";
+import {
+  fakePassword,
+  fakeToken,
+  fakeUser,
+  newFakePassword,
+} from "./fake-data/authentication";
 import { initializeReqResMocks, mockedCatchError } from "./utils";
 import { Transaction } from "../models/transaction";
 import { Debt } from "../models/debt";
@@ -28,17 +34,6 @@ vi.mock("../models/debt");
 vi.mock("bcryptjs");
 vi.mock("jsonwebtoken");
 vi.mock("nodemailer");
-
-const fakePassword = "fakePassword";
-const newFakePassword = "newFakePassword";
-const fakeUser = {
-  _id: "fakeId",
-  name: "fakeName",
-  email: "fakeEmail",
-  password: fakePassword,
-  currency: { name: "fakeCurrency", code: "FAKE" },
-};
-const fakeToken = "fakeToken";
 
 describe("Authentication Middleware", () => {
   afterEach(() => {

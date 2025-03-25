@@ -4,33 +4,24 @@ import {
   deleteOne,
   edit,
   getAll,
-  getBalance,
-  calculateBalance,
   getTotalIncome,
   getTotalExpenses,
-  filterByDay,
-  filterByMonth,
-  filterByYear,
-  filterByCustomDays,
-  filterByCustomMonths,
-  filterByCustomYears,
 } from "../controllers/transactions";
 import { Transaction } from "../models/transaction";
 import {
   defaultGetAllQueryObject,
   initializeReqResMocks,
   mockedCatchError,
-  fakeObjectId,
 } from "./utils";
 import {
-  fakeAggregates,
   fakeTransaction,
   fakeTransactionsList,
   getTransactionsPage,
 } from "./fake-data/transactions";
+import { getSumByDate } from "../helpers/transactions";
 
 vi.mock("../models/transaction.ts");
-vi.mock("../models/category.ts");
+vi.mock("../helpers/transactions.ts");
 
 describe("Transactions Controller", () => {
   describe("Create Transaction Controller", async () => {
@@ -157,59 +148,13 @@ describe("Transactions Controller", () => {
     });
   });
 
-  describe("Calculate Balance Controller", () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it("should error been throwed", async () => {
-      vi.mocked(Transaction.aggregate, true).mockImplementation(() => {
-        throw mockedCatchError;
-      });
-      //@ts-expect-error Unsolved error with ObjectId
-      const result = await calculateBalance(fakeObjectId);
-      expect(result).toEqual(mockedCatchError);
-    });
-
-    it("Should calculate Balance", async () => {
-      vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
-      //@ts-expect-error Unsolved error with ObjectId
-      const result = await calculateBalance(fakeObjectId);
-      expect(result).toEqual(fakeTransaction.amount);
-    });
-  });
-
-  describe("Get Balance Controller", () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it("should return 500 when error is throwed", async () => {
-      vi.mocked(Transaction.aggregate, true).mockImplementation(() => {
-        throw mockedCatchError;
-      });
-      const { req, res } = initializeReqResMocks();
-      await getBalance(req, res);
-      expect(res.statusCode).toBe(500);
-      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
-    });
-
-    it("Should Get Balance", async () => {
-      vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
-      const { req, res } = initializeReqResMocks();
-      await getBalance(req, res);
-      expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual(fakeTransaction.amount);
-    });
-  });
-
   describe("Get Total Income Controller", () => {
     afterEach(() => {
       vi.restoreAllMocks();
     });
 
     it("should return 500 when error is throwed", async () => {
-      vi.mocked(Transaction.aggregate, true).mockImplementation(() => {
+      vi.mocked(getSumByDate, true).mockImplementation(() => {
         throw mockedCatchError;
       });
       const { req, res } = initializeReqResMocks();
@@ -218,8 +163,8 @@ describe("Transactions Controller", () => {
       expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
     });
 
-    it("Should Get Balance", async () => {
-      vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
+    it("Should Get Total Income", async () => {
+      vi.mocked(getSumByDate, true).mockResolvedValue(fakeTransaction.amount);
       const { req, res } = initializeReqResMocks();
       await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
@@ -233,7 +178,7 @@ describe("Transactions Controller", () => {
     });
 
     it("should return 500 when error is throwed", async () => {
-      vi.mocked(Transaction.aggregate, true).mockImplementation(() => {
+      vi.mocked(getSumByDate, true).mockImplementation(() => {
         throw mockedCatchError;
       });
       const { req, res } = initializeReqResMocks();
@@ -243,155 +188,11 @@ describe("Transactions Controller", () => {
     });
 
     it("Should Get Total Expenses", async () => {
-      vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
+      vi.mocked(getSumByDate, true).mockResolvedValue(fakeTransaction.amount);
       const { req, res } = initializeReqResMocks();
-      await getTotalIncome(req, res);
+      await getTotalExpenses(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeTransaction.amount);
-    });
-  });
-
-  describe("Filter By Day Controller", () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it("Should return 500 when error is throwed", async () => {
-      vi.mocked(Transaction.find, true).mockImplementation(() => {
-        throw mockedCatchError;
-      });
-      const { req, res } = initializeReqResMocks();
-      await filterByDay(req, res);
-      expect(res.statusCode).toBe(500);
-      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
-    });
-
-    it("Should filter by day", async () => {
-      vi.mocked(Transaction.find, true).mockResolvedValue([fakeTransaction]);
-      const { req, res } = initializeReqResMocks();
-      await filterByDay(req, res);
-      expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual([fakeTransaction]);
-    });
-  });
-
-  describe("Filter By Month Controller", () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it("Should return 500 when error is throwed", async () => {
-      vi.mocked(Transaction.find, true).mockImplementation(() => {
-        throw mockedCatchError;
-      });
-      const { req, res } = initializeReqResMocks();
-      await filterByMonth(req, res);
-      expect(res.statusCode).toBe(500);
-      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
-    });
-
-    it("Should filter by month", async () => {
-      vi.mocked(Transaction.find, true).mockResolvedValue([fakeTransaction]);
-      const { req, res } = initializeReqResMocks();
-      await filterByMonth(req, res);
-      expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual([fakeTransaction]);
-    });
-  });
-
-  describe("Filter By Year Controller", () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it("Should return 500 when error is throwed", async () => {
-      vi.mocked(Transaction.find, true).mockImplementation(() => {
-        throw mockedCatchError;
-      });
-      const { req, res } = initializeReqResMocks();
-      await filterByYear(req, res);
-      expect(res.statusCode).toBe(500);
-      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
-    });
-
-    it("Should filter by year", async () => {
-      vi.mocked(Transaction.find, true).mockResolvedValue([fakeTransaction]);
-      const { req, res } = initializeReqResMocks();
-      await filterByYear(req, res);
-      expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual([fakeTransaction]);
-    });
-  });
-
-  describe("Filter By Custom Days Controller", () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it("Should return 500 when error is throwed", async () => {
-      vi.mocked(Transaction.find, true).mockImplementation(() => {
-        throw mockedCatchError;
-      });
-      const { req, res } = initializeReqResMocks();
-      await filterByCustomDays(req, res);
-      expect(res.statusCode).toBe(500);
-      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
-    });
-
-    it("Should filter by custom days", async () => {
-      vi.mocked(Transaction.find, true).mockResolvedValue([fakeTransaction]);
-      const { req, res } = initializeReqResMocks();
-      await filterByCustomDays(req, res);
-      expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual([fakeTransaction]);
-    });
-  });
-
-  describe("Filter By Custom Months Controller", () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it("Should return 500 when error is throwed", async () => {
-      vi.mocked(Transaction.find, true).mockImplementation(() => {
-        throw mockedCatchError;
-      });
-      const { req, res } = initializeReqResMocks();
-      await filterByCustomMonths(req, res);
-      expect(res.statusCode).toBe(500);
-      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
-    });
-
-    it("Should filter by custom months", async () => {
-      vi.mocked(Transaction.find, true).mockResolvedValue([fakeTransaction]);
-      const { req, res } = initializeReqResMocks();
-      await filterByCustomMonths(req, res);
-      expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual([fakeTransaction]);
-    });
-  });
-
-  describe("Filter By Custom Years Controller", () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it("Should return 500 when error is throwed", async () => {
-      vi.mocked(Transaction.find, true).mockImplementation(() => {
-        throw mockedCatchError;
-      });
-      const { req, res } = initializeReqResMocks();
-      await filterByCustomYears(req, res);
-      expect(res.statusCode).toBe(500);
-      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
-    });
-
-    it("Should filter by custom years", async () => {
-      vi.mocked(Transaction.find, true).mockResolvedValue([fakeTransaction]);
-      const { req, res } = initializeReqResMocks();
-      await filterByCustomYears(req, res);
-      expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual([fakeTransaction]);
     });
   });
 });
