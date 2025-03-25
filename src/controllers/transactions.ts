@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as transactionModel from "../models/transaction";
-import { ObjectId } from "../mongo-setup";
 import { addDays, addMonths, addYears } from "date-fns";
+import { getSumByDate } from "../helpers/transactions";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
@@ -69,45 +69,17 @@ export const deleteOne = async (req: Request, res: Response) => {
   }
 };
 
-const calculateSumByTpe = async (userId: string, isIncome: boolean) => {
-  try {
-    const transactionsAgg = await transactionModel.Transaction.aggregate([
-      {
-        $match: {
-          userId: new ObjectId(userId),
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          sum: {
-            $sum: {
-              $cond: [
-                { $eq: ["$type", isIncome ? "income" : "expenses"] },
-                "$amount",
-                0,
-              ],
-            },
-          },
-        },
-      },
-    ]);
-    const sum = transactionsAgg[0]?.sum || 0;
-    return sum;
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return err;
-    }
-  }
-};
-
 export const getTotalIncome = async (req: Request, res: Response) => {
   try {
-    const balance = await calculateSumByTpe(req.params.userId, true);
-    if (balance instanceof Error) {
-      throw balance;
-    }
-    return res.status(200).json(balance);
+    const totalIncome = await getSumByDate({
+      userId: req.params.userId,
+      isTotalIncome: true,
+      timePeriod: req.query.timePeriod as string,
+      selectedDate: req.query.selectedDate as string,
+      selectedStartDate: req.query.selectedStartDate as string,
+      selectedEndDate: req.query.selectedEndDate as string,
+    });
+    return res.status(200).json(totalIncome);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
@@ -117,11 +89,15 @@ export const getTotalIncome = async (req: Request, res: Response) => {
 
 export const getTotalExpenses = async (req: Request, res: Response) => {
   try {
-    const balance = await calculateSumByTpe(req.params.userId, false);
-    if (balance instanceof Error) {
-      throw balance;
-    }
-    return res.status(200).json(balance);
+    const totalExpenses = await getSumByDate({
+      userId: req.params.userId,
+      timePeriod: req.query.timePeriod as string,
+      isTotalIncome: false,
+      selectedDate: req.query.selectedDate as string,
+      selectedStartDate: req.query.selectedStartDate as string,
+      selectedEndDate: req.query.selectedEndDate as string,
+    });
+    return res.status(200).json(totalExpenses);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
@@ -129,48 +105,17 @@ export const getTotalExpenses = async (req: Request, res: Response) => {
   }
 };
 
-export const calculateBalance = async (userId: string) => {
+// TODO Refactor in next update
+
+export const filterByDate = async (startDate: Date, endDate: Date) => {
   try {
-    const transactionsAgg = await transactionModel.Transaction.aggregate([
-      {
-        $match: {
-          userId: new ObjectId(userId),
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          balance: {
-            $sum: {
-              $cond: [
-                { $eq: ["$type", "income"] },
-                "$amount",
-                { $multiply: ["$amount", -1] },
-              ],
-            },
-          },
-        },
-      },
-    ]);
-    const balance = transactionsAgg[0]?.balance || 0;
-    return balance;
+    const filteredTransactions = await transactionModel.Transaction.find({
+      date: { $gte: startDate, $lt: endDate },
+    });
+    return filteredTransactions;
   } catch (err: unknown) {
     if (err instanceof Error) {
       return err;
-    }
-  }
-};
-
-export const getBalance = async (req: Request, res: Response) => {
-  try {
-    const balance = await calculateBalance(req.params.userId);
-    if (balance instanceof Error) {
-      throw balance;
-    }
-    return res.status(200).json(balance);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
     }
   }
 };
@@ -181,9 +126,7 @@ export const filterByDay = async (req: Request, res: Response) => {
     const startDate = new Date(`${selectedDate}T00:00:00.000+00:00`);
     const endDate = addDays(startDate, 1);
 
-    const filteredTransactions = await transactionModel.Transaction.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredTransactions = filterByDate(startDate, endDate);
     return res.status(200).json(filteredTransactions);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -198,9 +141,7 @@ export const filterByMonth = async (req: Request, res: Response) => {
     const startDate = new Date(`${selectedDate}-01T00:00:00.000+00:00`);
     const endDate = addDays(addMonths(startDate, 1), 1);
 
-    const filteredTransactions = await transactionModel.Transaction.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredTransactions = filterByDate(startDate, endDate);
     return res.status(200).json(filteredTransactions);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -215,9 +156,7 @@ export const filterByYear = async (req: Request, res: Response) => {
     const startDate = new Date(`${selectedDate}-01-01T00:00:00.000+00:00`);
     const endDate = addYears(startDate, 1);
 
-    const filteredTransactions = await transactionModel.Transaction.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredTransactions = filterByDate(startDate, endDate);
     return res.status(200).json(filteredTransactions);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -233,9 +172,7 @@ export const filterByCustomDays = async (req: Request, res: Response) => {
       new Date(`${req.query?.end}T00:00:00.000+00:00`),
       1
     );
-    const filteredTransactions = await transactionModel.Transaction.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredTransactions = filterByDate(startDate, endDate);
     return res.status(200).json(filteredTransactions);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -251,9 +188,7 @@ export const filterByCustomMonths = async (req: Request, res: Response) => {
       new Date(`${req.query?.end}-01T00:00:00.000+00:00`),
       1
     );
-    const filteredTransactions = await transactionModel.Transaction.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredTransactions = filterByDate(startDate, endDate);
     return res.status(200).json(filteredTransactions);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -270,9 +205,7 @@ export const filterByCustomYears = async (req: Request, res: Response) => {
       1
     );
 
-    const filteredTransactions = await transactionModel.Transaction.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredTransactions = filterByDate(startDate, endDate);
     return res.status(200).json(filteredTransactions);
   } catch (err: unknown) {
     if (err instanceof Error) {
