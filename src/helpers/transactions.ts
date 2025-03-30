@@ -2,44 +2,64 @@ import { ObjectId } from "../mongo-setup";
 import { getStartAndEndDates } from "./movements";
 import * as transactionModel from "../models/transaction";
 
-export const calculateSumByTpe = async (
-  userId: string,
-  isIncome: boolean,
-  startDate?: Date,
-  endDate?: Date
-) => {
+export const transactionsHelpersErrors = {
+  incompleteDateRange: new Error(
+    "This method requires both a startDate and endDate"
+  ),
+  swappedDateRange: new Error("startDate must be earlier than endDate"),
+};
+
+type calculateSumByTypeParams = {
+  userId: string;
+  isIncome: boolean;
+  startDate?: Date;
+  endDate?: Date;
+};
+
+export const calculateSumByType = async (params: calculateSumByTypeParams) => {
   try {
+    let error = null;
+    let sum = 0;
     const matchQuery: { [key: string]: any } = {
-      userId: new ObjectId(userId),
+      userId: new ObjectId(params.userId),
     };
-    if (startDate && endDate) {
-      matchQuery.date = { $gte: startDate, $lt: endDate };
+    if (
+      (!params.startDate && params.endDate) ||
+      (params.startDate && !params.endDate)
+    ) {
+      error = transactionsHelpersErrors.incompleteDateRange;
+    } else if (params.startDate && params.endDate) {
+      if (params.startDate > params.endDate) {
+        error = transactionsHelpersErrors.swappedDateRange;
+      } else {
+        matchQuery.date = { $gte: params.startDate, $lt: params.endDate };
+      }
     }
-    const transactionsAgg = await transactionModel.Transaction.aggregate([
-      {
-        $match: matchQuery,
-      },
-      {
-        $group: {
-          _id: null,
-          sum: {
-            $sum: {
-              $cond: [
-                { $eq: ["$type", isIncome ? "income" : "expenses"] },
-                "$amount",
-                0,
-              ],
+    if (!error) {
+      const transactionsAgg = await transactionModel.Transaction.aggregate([
+        {
+          $match: matchQuery,
+        },
+        {
+          $group: {
+            _id: null,
+            sum: {
+              $sum: {
+                $cond: [
+                  { $eq: ["$type", params.isIncome ? "income" : "expenses"] },
+                  "$amount",
+                  0,
+                ],
+              },
             },
           },
         },
-      },
-    ]);
-    const sum = transactionsAgg[0]?.sum || 0;
-    return sum;
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return err;
+      ]);
+      sum = transactionsAgg[0]?.sum || 0;
     }
+    return { error, sum };
+  } catch (error) {
+    return { error, sum: null };
   }
 };
 
@@ -57,28 +77,29 @@ export const getSumByDate = async (params: getSumByDateParams) => {
     let startDate = undefined;
     let endDate = undefined;
     if (params.timePeriod) {
-      const startAndEndDates = getStartAndEndDates(
-        params.timePeriod,
-        params.selectedDate,
-        params.selectedStartDate,
-        params.selectedEndDate
-      );
-      startDate = startAndEndDates.startDate;
-      endDate = startAndEndDates.endDate;
+      const { data, error: getStartAndEndDateError } = getStartAndEndDates({
+        timePeriod: params.timePeriod,
+        selectedDate: params.selectedDate,
+        selectedStartDate: params.selectedStartDate,
+        selectedEndDate: params.selectedEndDate,
+      });
+      if (getStartAndEndDateError) {
+        throw getStartAndEndDateError;
+      }
+      startDate = data.startDate;
+      endDate = data.endDate;
     }
-    const sum = await calculateSumByTpe(
-      params.userId,
-      params.isTotalIncome,
+    const { error, sum } = await calculateSumByType({
+      userId: params.userId,
+      isIncome: params.isTotalIncome,
       startDate,
-      endDate
-    );
-    if (sum instanceof Error) {
-      throw sum;
+      endDate,
+    });
+    if (error instanceof Error) {
+      throw error;
     }
-    return sum;
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return err;
-    }
+    return { error, sum };
+  } catch (error) {
+    return { error, sum: null };
   }
 };

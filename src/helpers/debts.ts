@@ -2,44 +2,64 @@ import { ObjectId } from "../mongo-setup";
 import { getStartAndEndDates } from "./movements";
 import * as debtModel from "../models/debt";
 
-export const calculateSumByTpe = async (
-  userId: string,
-  isLoans: boolean,
-  startDate?: Date,
-  endDate?: Date
-) => {
+export const debtsHelpersErrors = {
+  incompleteDateRange: new Error(
+    "This method requires both a startDate and endDate"
+  ),
+  swappedDateRange: new Error("startDate must be earlier than endDate"),
+};
+
+type calculateSumByTypeParams = {
+  userId: string;
+  isLoans: boolean;
+  startDate?: Date;
+  endDate?: Date;
+};
+
+export const calculateSumByType = async (params: calculateSumByTypeParams) => {
   try {
+    let error = null;
+    let sum = 0;
     const matchQuery: { [key: string]: any } = {
-      userId: new ObjectId(userId),
+      userId: new ObjectId(params.userId),
     };
-    if (startDate && endDate) {
-      matchQuery.date = { $gte: startDate, $lt: endDate };
+    if (
+      (!params.startDate && params.endDate) ||
+      (params.startDate && !params.endDate)
+    ) {
+      error = debtsHelpersErrors.incompleteDateRange;
+    } else if (params.startDate && params.endDate) {
+      if (params.startDate > params.endDate) {
+        error = debtsHelpersErrors.swappedDateRange;
+      } else {
+        matchQuery.date = { $gte: params.startDate, $lt: params.endDate };
+      }
     }
-    const debtsAgg = await debtModel.Debt.aggregate([
-      {
-        $match: matchQuery,
-      },
-      {
-        $group: {
-          _id: null,
-          sum: {
-            $sum: {
-              $cond: [
-                { $eq: ["$type", isLoans ? "loan" : "debt"] },
-                "$amount",
-                0,
-              ],
+    if (!error) {
+      const debtsAgg = await debtModel.Debt.aggregate([
+        {
+          $match: matchQuery,
+        },
+        {
+          $group: {
+            _id: null,
+            sum: {
+              $sum: {
+                $cond: [
+                  { $eq: ["$type", params.isLoans ? "loan" : "debt"] },
+                  "$amount",
+                  0,
+                ],
+              },
             },
           },
         },
-      },
-    ]);
-    const sum = debtsAgg[0]?.sum || 0;
-    return sum;
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return err;
+      ]);
+      sum = debtsAgg[0]?.sum || 0;
     }
+    return { error, sum };
+  } catch (error) {
+    return { error, sum: null };
   }
 };
 
@@ -57,31 +77,29 @@ export const getSumByDate = async (params: getSumByDateParams) => {
     let startDate = undefined;
     let endDate = undefined;
     if (params.timePeriod) {
-      const startAndEndDates = getStartAndEndDates(
-        params.timePeriod,
-        params.selectedDate,
-        params.selectedStartDate,
-        params.selectedEndDate
-      );
-      startDate = startAndEndDates.startDate;
-      endDate = startAndEndDates.endDate;
+      const { data, error: getStartAndEndDateError } = getStartAndEndDates({
+        timePeriod: params.timePeriod,
+        selectedDate: params.selectedDate,
+        selectedStartDate: params.selectedStartDate,
+        selectedEndDate: params.selectedEndDate,
+      });
+      if (getStartAndEndDateError) {
+        throw getStartAndEndDateError;
+      }
+      startDate = data.startDate;
+      endDate = data.endDate;
     }
-    console.log("before sum");
-    const sum = await calculateSumByTpe(
-      params.userId,
-      params.isTotalLoans,
+    const { error, sum } = await calculateSumByType({
+      userId: params.userId,
+      isLoans: params.isTotalLoans,
       startDate,
-      endDate
-    );
-    console.log("sum: ", sum);
-    if (sum instanceof Error) {
-      console.log("on error");
-      throw sum;
+      endDate,
+    });
+    if (error instanceof Error) {
+      throw error;
     }
-    return sum;
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return err;
-    }
+    return { error, sum };
+  } catch (error) {
+    return { error, sum: null };
   }
 };
