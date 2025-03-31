@@ -20,7 +20,7 @@ export const calculateSumByType = async (params: calculateSumByTypeParams) => {
   try {
     let error = null;
     let sum = 0;
-    const matchQuery: { [key: string]: any } = {
+    const matchQuery: { [key: string]: object } = {
       userId: new ObjectId(params.userId),
     };
     if (
