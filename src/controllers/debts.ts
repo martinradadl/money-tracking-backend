@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as debtModel from "../models/debt";
-import { ObjectId } from "../mongo-setup";
 import { addDays, addMonths, addYears } from "date-fns";
+import { getSumByDate } from "../helpers/debts";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
@@ -81,45 +81,17 @@ export const deleteOne = async (req: Request, res: Response) => {
   }
 };
 
-const calculateSumByTpe = async (userId: string, isLoans: boolean) => {
-  try {
-    const debtsAgg = await debtModel.Debt.aggregate([
-      {
-        $match: {
-          userId: new ObjectId(userId),
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          sum: {
-            $sum: {
-              $cond: [
-                { $eq: ["$type", isLoans ? "loan" : "debt"] },
-                "$amount",
-                0,
-              ],
-            },
-          },
-        },
-      },
-    ]);
-    const sum = debtsAgg[0]?.sum || 0;
-    return sum;
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return err;
-    }
-  }
-};
-
 export const getTotalLoans = async (req: Request, res: Response) => {
   try {
-    const balance = await calculateSumByTpe(req.params.userId, true);
-    if (balance instanceof Error) {
-      throw balance;
-    }
-    return res.status(200).json(balance);
+    const totalLoans = await getSumByDate({
+      userId: req.params.userId,
+      isTotalLoans: true,
+      timePeriod: req.query.timePeriod as string,
+      selectedDate: req.query.selectedDate as string,
+      selectedStartDate: req.query.selectedStartDate as string,
+      selectedEndDate: req.query.selectedEndDate as string,
+    });
+    return res.status(200).json(totalLoans);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
@@ -129,11 +101,15 @@ export const getTotalLoans = async (req: Request, res: Response) => {
 
 export const getTotalDebts = async (req: Request, res: Response) => {
   try {
-    const balance = await calculateSumByTpe(req.params.userId, false);
-    if (balance instanceof Error) {
-      throw balance;
-    }
-    return res.status(200).json(balance);
+    const totalDebts = await getSumByDate({
+      userId: req.params.userId,
+      timePeriod: req.query.timePeriod as string,
+      isTotalLoans: false,
+      selectedDate: req.query.selectedDate as string,
+      selectedStartDate: req.query.selectedStartDate as string,
+      selectedEndDate: req.query.selectedEndDate as string,
+    });
+    return res.status(200).json(totalDebts);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
@@ -141,48 +117,17 @@ export const getTotalDebts = async (req: Request, res: Response) => {
   }
 };
 
-export const calculateBalance = async (userId: string) => {
+// TODO Refactor in next update
+
+export const filterByDate = async (startDate: Date, endDate: Date) => {
   try {
-    const debtsAgg = await debtModel.Debt.aggregate([
-      {
-        $match: {
-          userId: new ObjectId(userId),
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          balance: {
-            $sum: {
-              $cond: [
-                { $eq: ["$type", "loan"] },
-                "$amount",
-                { $multiply: ["$amount", -1] },
-              ],
-            },
-          },
-        },
-      },
-    ]);
-    const balance = debtsAgg[0]?.balance || 0;
-    return balance;
+    const filteredDebts = await debtModel.Debt.find({
+      date: { $gte: startDate, $lt: endDate },
+    });
+    return filteredDebts;
   } catch (err: unknown) {
     if (err instanceof Error) {
       return err;
-    }
-  }
-};
-
-export const getBalance = async (req: Request, res: Response) => {
-  try {
-    const balance = await calculateBalance(req.params.userId);
-    if (balance instanceof Error) {
-      throw balance;
-    }
-    return res.status(200).json(balance);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
     }
   }
 };
@@ -193,9 +138,7 @@ export const filterByDay = async (req: Request, res: Response) => {
     const startDate = new Date(`${selectedDate}T00:00:00.000+00:00`);
     const endDate = addDays(startDate, 1);
 
-    const filteredDebts = await debtModel.Debt.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredDebts = filterByDate(startDate, endDate);
     return res.status(200).json(filteredDebts);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -210,9 +153,7 @@ export const filterByMonth = async (req: Request, res: Response) => {
     const startDate = new Date(`${selectedDate}-01T00:00:00.000+00:00`);
     const endDate = addDays(addMonths(startDate, 1), 1);
 
-    const filteredDebts = await debtModel.Debt.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredDebts = filterByDate(startDate, endDate);
     return res.status(200).json(filteredDebts);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -227,9 +168,7 @@ export const filterByYear = async (req: Request, res: Response) => {
     const startDate = new Date(`${selectedDate}-01-01T00:00:00.000+00:00`);
     const endDate = addYears(startDate, 1);
 
-    const filteredDebts = await debtModel.Debt.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredDebts = filterByDate(startDate, endDate);
     return res.status(200).json(filteredDebts);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -245,9 +184,7 @@ export const filterByCustomDays = async (req: Request, res: Response) => {
       new Date(`${req.query?.end}T00:00:00.000+00:00`),
       1
     );
-    const filteredDebts = await debtModel.Debt.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredDebts = filterByDate(startDate, endDate);
     return res.status(200).json(filteredDebts);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -263,9 +200,7 @@ export const filterByCustomMonths = async (req: Request, res: Response) => {
       new Date(`${req.query?.end}-01T00:00:00.000+00:00`),
       1
     );
-    const filteredDebts = await debtModel.Debt.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredDebts = filterByDate(startDate, endDate);
     return res.status(200).json(filteredDebts);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -282,9 +217,7 @@ export const filterByCustomYears = async (req: Request, res: Response) => {
       1
     );
 
-    const filteredDebts = await debtModel.Debt.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
+    const filteredDebts = filterByDate(startDate, endDate);
     return res.status(200).json(filteredDebts);
   } catch (err: unknown) {
     if (err instanceof Error) {
