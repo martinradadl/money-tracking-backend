@@ -5,7 +5,7 @@ export const fakeDebt = {
   concept: "fakeConcept",
   amount: 100,
   category: "fakeCategory",
-  date: "fakeDate1",
+  date: new Date("2022-04-04").toISOString(),
   userId: "fakeUserId",
 };
 
@@ -16,7 +16,7 @@ export const fakeDebt2 = {
   concept: "fakeConcept2",
   amount: 200,
   category: "fakeCategory2",
-  date: "fakeDate2",
+  date: new Date("2022-04-20").toISOString(),
   userId: "fakeUserId2",
 };
 
@@ -27,7 +27,7 @@ export const fakeDebt3 = {
   concept: "fakeConcept3",
   amount: 300,
   category: "fakeCategory3",
-  date: "fakeDate3",
+  date: new Date("2024-02-04").toISOString(),
   userId: "fakeUserId3",
 };
 
