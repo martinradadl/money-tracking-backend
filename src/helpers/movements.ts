@@ -92,5 +92,5 @@ export const getStartAndEndDates = (params: getStartAndEndDatesParams) => {
       },
     };
   }
-  return { error, data: timePeriods[params.timePeriod] };
+  return { error, data: !error ? timePeriods[params.timePeriod] : null };
 };

@@ -13,9 +13,14 @@ import {
   initializeReqResMocks,
   mockedCatchError,
 } from "./utils";
-import { fakeDebt, fakeDebtsList, getDebtsPage } from "./fake-data/debts";
+import {
+  fakeDebt,
+  fakeDebt2,
+  fakeDebtsList,
+  getDebtsPage,
+} from "./fake-data/debts";
 import { getSumByDate } from "../helpers/debts";
-
+import { movementsErrors } from "../helpers/movements";
 vi.mock("../models/debt.ts");
 vi.mock("../helpers/debts.ts");
 
@@ -88,6 +93,28 @@ describe("Debts Controller", () => {
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(result);
     });
+
+    it("Should return 200 and get Debts in a selected date", async () => {
+      //@ts-expect-error Unsolved error with mockImplementation function
+      vi.mocked(Debt.find, true).mockImplementation(() => {
+        return defaultGetAllQueryObject([fakeDebt, fakeDebt2]);
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      await getAll(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeDebt, fakeDebt2]);
+    });
+
+    it("Should return 400 when error in getStartAndEndDates is returned", async () => {
+      const { req, res } = initializeReqResMocks();
+      req.query = { timePeriod: "month" };
+      await getAll(req, res);
+      expect(res.statusCode).toBe(400);
+      const error = movementsErrors.noDates;
+      console.log("res._getJSONData(): ", res._getJSONData());
+      expect(res._getJSONData()).toEqual({ error: error.message });
+    });
   });
 
   describe("Edit Debt Controller", () => {
@@ -103,6 +130,17 @@ describe("Debts Controller", () => {
       await edit(req, res);
       expect(res.statusCode).toBe(500);
       expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("should return 404 when Debt is not found", async () => {
+      vi.mocked(Debt.findByIdAndUpdate, true).mockResolvedValue(null);
+      const { req, res } = initializeReqResMocks();
+      await edit(req, res);
+      expect(res.statusCode).toBe(404);
+      expect(res._getJSONData()).toEqual({
+        message: "Edit not successful",
+        error: "Debt not found",
+      });
     });
 
     it("Should update Debt", async () => {
@@ -133,6 +171,17 @@ describe("Debts Controller", () => {
       expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
     });
 
+    it("should return 404 when Debt is not found", async () => {
+      vi.mocked(Debt.findByIdAndUpdate, true).mockResolvedValue(null);
+      const { req, res } = initializeReqResMocks();
+      await deleteOne(req, res);
+      expect(res.statusCode).toBe(404);
+      expect(res._getJSONData()).toEqual({
+        message: "Delete not successful",
+        error: "Debt not found",
+      });
+    });
+
     it("Should delete Debt", async () => {
       vi.mocked(Debt.findByIdAndDelete, true).mockResolvedValue(fakeDebt);
       const { req, res } = initializeReqResMocks();
@@ -158,11 +207,17 @@ describe("Debts Controller", () => {
     });
 
     it("Should Get Total Debts", async () => {
-      vi.mocked(getSumByDate, true).mockResolvedValue(fakeDebt.amount);
+      vi.mocked(getSumByDate, true).mockResolvedValue({
+        error: null,
+        sum: fakeDebt.amount,
+      });
       const { req, res } = initializeReqResMocks();
       await getTotalDebts(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual(fakeDebt.amount);
+      expect(res._getJSONData()).toEqual({
+        error: null,
+        sum: fakeDebt.amount,
+      });
     });
   });
 
@@ -182,11 +237,17 @@ describe("Debts Controller", () => {
     });
 
     it("Should Get Total Loans", async () => {
-      vi.mocked(getSumByDate, true).mockResolvedValue(fakeDebt.amount);
+      vi.mocked(getSumByDate, true).mockResolvedValue({
+        error: null,
+        sum: fakeDebt.amount,
+      });
       const { req, res } = initializeReqResMocks();
       await getTotalLoans(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual(fakeDebt.amount);
+      expect(res._getJSONData()).toEqual({
+        error: null,
+        sum: fakeDebt.amount,
+      });
     });
   });
 });

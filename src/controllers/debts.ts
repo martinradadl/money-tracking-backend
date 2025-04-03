@@ -1,16 +1,35 @@
 import { Request, Response } from "express";
 import * as debtModel from "../models/debt";
-import { addDays, addMonths, addYears } from "date-fns";
 import { getSumByDate } from "../helpers/debts";
+import { getStartAndEndDates } from "../helpers/movements";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query?.page as string) || 1;
     const limit = parseInt(req.query?.limit as string) || 0;
-
-    const debts = await debtModel.Debt.find({
+    const timePeriod = req.query?.timePeriod as string;
+    const selectedStartDate = req.query?.startDate as string;
+    const selectedEndDate = req.query?.endDate as string;
+    const selectedDate = req.query?.selectedDate as string;
+    const findQuery: { [key: string]: object | string } = {
       userId: req.params.userId,
-    })
+    };
+
+    if (timePeriod) {
+      const { data, error } = getStartAndEndDates({
+        timePeriod,
+        selectedEndDate,
+        selectedStartDate,
+        selectedDate,
+      });
+      if (error) return res.status(400).json({ error: error.message });
+      if (data !== null) {
+        const { startDate, endDate } = data;
+        findQuery.date = { $gte: startDate, $lt: endDate };
+      }
+    }
+
+    const debts = await debtModel.Debt.find(findQuery)
       .limit(limit)
       .skip((page - 1) * limit)
       .populate("category");
@@ -110,115 +129,6 @@ export const getTotalDebts = async (req: Request, res: Response) => {
       selectedEndDate: req.query.selectedEndDate as string,
     });
     return res.status(200).json(totalDebts);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-// TODO Refactor in next update
-
-export const filterByDate = async (startDate: Date, endDate: Date) => {
-  try {
-    const filteredDebts = await debtModel.Debt.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
-    return filteredDebts;
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return err;
-    }
-  }
-};
-
-export const filterByDay = async (req: Request, res: Response) => {
-  try {
-    const selectedDate = req.query?.date as string;
-    const startDate = new Date(`${selectedDate}T00:00:00.000+00:00`);
-    const endDate = addDays(startDate, 1);
-
-    const filteredDebts = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredDebts);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByMonth = async (req: Request, res: Response) => {
-  try {
-    const selectedDate = req.query?.date as string;
-    const startDate = new Date(`${selectedDate}-01T00:00:00.000+00:00`);
-    const endDate = addDays(addMonths(startDate, 1), 1);
-
-    const filteredDebts = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredDebts);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByYear = async (req: Request, res: Response) => {
-  try {
-    const selectedDate = req.query?.date as string;
-    const startDate = new Date(`${selectedDate}-01-01T00:00:00.000+00:00`);
-    const endDate = addYears(startDate, 1);
-
-    const filteredDebts = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredDebts);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByCustomDays = async (req: Request, res: Response) => {
-  try {
-    const startDate = new Date(`${req.query?.start}T00:00:00.000+00:00`);
-    const endDate = addDays(
-      new Date(`${req.query?.end}T00:00:00.000+00:00`),
-      1
-    );
-    const filteredDebts = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredDebts);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByCustomMonths = async (req: Request, res: Response) => {
-  try {
-    const startDate = new Date(`${req.query?.start}-01T00:00:00.000+00:00`);
-    const endDate = addMonths(
-      new Date(`${req.query?.end}-01T00:00:00.000+00:00`),
-      1
-    );
-    const filteredDebts = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredDebts);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByCustomYears = async (req: Request, res: Response) => {
-  try {
-    const startDate = new Date(`${req.query?.start}-01-01T00:00:00.000+00:00`);
-    const endDate = addYears(
-      new Date(`${req.query?.end}-01-01T00:00:00.000+00:00`),
-      1
-    );
-
-    const filteredDebts = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredDebts);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });

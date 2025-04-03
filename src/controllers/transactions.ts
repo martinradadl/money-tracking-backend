@@ -1,15 +1,35 @@
 import { Request, Response } from "express";
 import * as transactionModel from "../models/transaction";
-import { addDays, addMonths, addYears } from "date-fns";
 import { getSumByDate } from "../helpers/transactions";
+import { getStartAndEndDates } from "../helpers/movements";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query?.page as string) || 1;
     const limit = parseInt(req.query?.limit as string) || 0;
-    const transactions = await transactionModel.Transaction.find({
+    const timePeriod = req.query?.timePeriod as string;
+    const selectedStartDate = req.query?.startDate as string;
+    const selectedEndDate = req.query?.endDate as string;
+    const selectedDate = req.query?.selectedDate as string;
+    const findQuery: { [key: string]: object | string } = {
       userId: req.params.userId,
-    })
+    };
+
+    if (timePeriod) {
+      const { data, error } = getStartAndEndDates({
+        timePeriod,
+        selectedEndDate,
+        selectedStartDate,
+        selectedDate,
+      });
+      if (error) return res.status(400).json({ error: error.message });
+      if (data !== null) {
+        const { startDate, endDate } = data;
+        findQuery.date = { $gte: startDate, $lt: endDate };
+      }
+    }
+
+    const transactions = await transactionModel.Transaction.find(findQuery)
       .limit(limit)
       .skip((page - 1) * limit)
       .populate("category");
@@ -48,6 +68,12 @@ export const edit = async (req: Request, res: Response) => {
       { $set: req.body },
       { new: true }
     );
+    if (!transaction) {
+      return res.status(404).json({
+        message: "Edit not successful",
+        error: "Transaction not found",
+      });
+    }
     const populatedTransaction = await transaction?.populate("category");
     return res.status(200).json(populatedTransaction);
   } catch (err: unknown) {
@@ -61,6 +87,12 @@ export const deleteOne = async (req: Request, res: Response) => {
   try {
     const deletedTransaction =
       await transactionModel.Transaction.findByIdAndDelete(req.params.id);
+    if (!deletedTransaction) {
+      return res.status(404).json({
+        message: "Delete not successful",
+        error: "Transaction not found",
+      });
+    }
     return res.status(200).json(deletedTransaction);
   } catch (err: unknown) {
     if (err instanceof Error) {
@@ -98,115 +130,6 @@ export const getTotalExpenses = async (req: Request, res: Response) => {
       selectedEndDate: req.query.selectedEndDate as string,
     });
     return res.status(200).json(totalExpenses);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-// TODO Refactor in next update
-
-export const filterByDate = async (startDate: Date, endDate: Date) => {
-  try {
-    const filteredTransactions = await transactionModel.Transaction.find({
-      date: { $gte: startDate, $lt: endDate },
-    });
-    return filteredTransactions;
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return err;
-    }
-  }
-};
-
-export const filterByDay = async (req: Request, res: Response) => {
-  try {
-    const selectedDate = req.query?.date as string;
-    const startDate = new Date(`${selectedDate}T00:00:00.000+00:00`);
-    const endDate = addDays(startDate, 1);
-
-    const filteredTransactions = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredTransactions);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByMonth = async (req: Request, res: Response) => {
-  try {
-    const selectedDate = req.query?.date as string;
-    const startDate = new Date(`${selectedDate}-01T00:00:00.000+00:00`);
-    const endDate = addDays(addMonths(startDate, 1), 1);
-
-    const filteredTransactions = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredTransactions);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByYear = async (req: Request, res: Response) => {
-  try {
-    const selectedDate = req.query?.date as string;
-    const startDate = new Date(`${selectedDate}-01-01T00:00:00.000+00:00`);
-    const endDate = addYears(startDate, 1);
-
-    const filteredTransactions = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredTransactions);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByCustomDays = async (req: Request, res: Response) => {
-  try {
-    const startDate = new Date(`${req.query?.start}T00:00:00.000+00:00`);
-    const endDate = addDays(
-      new Date(`${req.query?.end}T00:00:00.000+00:00`),
-      1
-    );
-    const filteredTransactions = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredTransactions);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByCustomMonths = async (req: Request, res: Response) => {
-  try {
-    const startDate = new Date(`${req.query?.start}-01T00:00:00.000+00:00`);
-    const endDate = addMonths(
-      new Date(`${req.query?.end}-01T00:00:00.000+00:00`),
-      1
-    );
-    const filteredTransactions = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredTransactions);
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(500).json({ message: err.message });
-    }
-  }
-};
-
-export const filterByCustomYears = async (req: Request, res: Response) => {
-  try {
-    const startDate = new Date(`${req.query?.start}-01-01T00:00:00.000+00:00`);
-    const endDate = addYears(
-      new Date(`${req.query?.end}-01-01T00:00:00.000+00:00`),
-      1
-    );
-
-    const filteredTransactions = filterByDate(startDate, endDate);
-    return res.status(200).json(filteredTransactions);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });

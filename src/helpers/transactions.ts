@@ -86,8 +86,10 @@ export const getSumByDate = async (params: getSumByDateParams) => {
       if (getStartAndEndDateError) {
         throw getStartAndEndDateError;
       }
-      startDate = data.startDate;
-      endDate = data.endDate;
+      if (data !== null) {
+        startDate = data.startDate;
+        endDate = data.endDate;
+      }
     }
     const { error, sum } = await calculateSumByType({
       userId: params.userId,
