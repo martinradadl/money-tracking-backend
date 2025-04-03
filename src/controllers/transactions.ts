@@ -23,7 +23,7 @@ export const getAll = async (req: Request, res: Response) => {
         selectedDate,
       });
       if (error) return res.status(400).json({ error: error.message });
-      if (data != null) {
+      if (data !== null) {
         const { startDate, endDate } = data;
         findQuery.date = { $gte: startDate, $lt: endDate };
       }
