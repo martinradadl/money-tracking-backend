@@ -214,10 +214,7 @@ describe("Debts Controller", () => {
       const { req, res } = initializeReqResMocks();
       await getTotalDebts(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual({
-        error: null,
-        sum: fakeDebt.amount,
-      });
+      expect(res._getJSONData()).toEqual(fakeDebt.amount);
     });
   });
 
@@ -244,10 +241,7 @@ describe("Debts Controller", () => {
       const { req, res } = initializeReqResMocks();
       await getTotalLoans(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual({
-        error: null,
-        sum: fakeDebt.amount,
-      });
+      expect(res._getJSONData()).toEqual(fakeDebt.amount);
     });
   });
 });
