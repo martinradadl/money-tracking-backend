@@ -110,7 +110,7 @@ export const getTotalLoans = async (req: Request, res: Response) => {
       selectedStartDate: req.query.selectedStartDate as string,
       selectedEndDate: req.query.selectedEndDate as string,
     });
-    return res.status(200).json(totalLoans);
+    return res.status(200).json(totalLoans.sum);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });
@@ -128,7 +128,7 @@ export const getTotalDebts = async (req: Request, res: Response) => {
       selectedStartDate: req.query.selectedStartDate as string,
       selectedEndDate: req.query.selectedEndDate as string,
     });
-    return res.status(200).json(totalDebts);
+    return res.status(200).json(totalDebts.sum);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });

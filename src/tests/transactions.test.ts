@@ -216,10 +216,7 @@ describe("Transactions Controller", () => {
       const { req, res } = initializeReqResMocks();
       await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual({
-        error: null,
-        sum: fakeTransaction.amount,
-      });
+      expect(res._getJSONData()).toEqual(fakeTransaction.amount);
     });
   });
 
@@ -246,10 +243,7 @@ describe("Transactions Controller", () => {
       const { req, res } = initializeReqResMocks();
       await getTotalExpenses(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual({
-        error: null,
-        sum: fakeTransaction.amount,
-      });
+      expect(res._getJSONData()).toEqual(fakeTransaction.amount);
     });
   });
 });
