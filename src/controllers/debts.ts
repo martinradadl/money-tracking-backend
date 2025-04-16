@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as debtModel from "../models/debt";
-import { getSumByDate } from "../helpers/debts";
+import { getSumByFilter } from "../helpers/debts";
 import { getStartAndEndDates } from "../helpers/movements";
 
 export const getAll = async (req: Request, res: Response) => {
@@ -11,6 +11,8 @@ export const getAll = async (req: Request, res: Response) => {
     const selectedStartDate = req.query?.startDate as string;
     const selectedEndDate = req.query?.endDate as string;
     const selectedDate = req.query?.selectedDate as string;
+    const selectedCategoryId = req.query?.category as string;
+
     const findQuery: { [key: string]: object | string } = {
       userId: req.params.userId,
     };
@@ -27,6 +29,9 @@ export const getAll = async (req: Request, res: Response) => {
         const { startDate, endDate } = data;
         findQuery.date = { $gte: startDate, $lt: endDate };
       }
+    }
+    if (selectedCategoryId) {
+      findQuery.category = selectedCategoryId;
     }
 
     const debts = await debtModel.Debt.find(findQuery)
@@ -102,13 +107,14 @@ export const deleteOne = async (req: Request, res: Response) => {
 
 export const getTotalLoans = async (req: Request, res: Response) => {
   try {
-    const totalLoans = await getSumByDate({
+    const totalLoans = await getSumByFilter({
       userId: req.params.userId,
       isTotalLoans: true,
       timePeriod: req.query.timePeriod as string,
       selectedDate: req.query.selectedDate as string,
       selectedStartDate: req.query.selectedStartDate as string,
       selectedEndDate: req.query.selectedEndDate as string,
+      selectedCategory: req.query.category as string,
     });
     return res.status(200).json(totalLoans.sum);
   } catch (err: unknown) {
@@ -120,13 +126,14 @@ export const getTotalLoans = async (req: Request, res: Response) => {
 
 export const getTotalDebts = async (req: Request, res: Response) => {
   try {
-    const totalDebts = await getSumByDate({
+    const totalDebts = await getSumByFilter({
       userId: req.params.userId,
       timePeriod: req.query.timePeriod as string,
       isTotalLoans: false,
       selectedDate: req.query.selectedDate as string,
       selectedStartDate: req.query.selectedStartDate as string,
       selectedEndDate: req.query.selectedEndDate as string,
+      selectedCategory: req.query.category as string,
     });
     return res.status(200).json(totalDebts.sum);
   } catch (err: unknown) {
