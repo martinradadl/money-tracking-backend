@@ -19,7 +19,7 @@ import {
   fakeDebtsList,
   getDebtsPage,
 } from "./fake-data/debts";
-import { getSumByDate } from "../helpers/debts";
+import { getSumByFilter } from "../helpers/debts";
 import { movementsErrors } from "../helpers/movements";
 vi.mock("../models/debt.ts");
 vi.mock("../helpers/debts.ts");
@@ -101,6 +101,18 @@ describe("Debts Controller", () => {
       });
       const { req, res } = initializeReqResMocks();
       req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      await getAll(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeDebt, fakeDebt2]);
+    });
+
+    it("Should return 200 and get Debts in a selected category", async () => {
+      //@ts-expect-error Unsolved error with mockImplementation function
+      vi.mocked(Debt.find, true).mockImplementation(() => {
+        return defaultGetAllQueryObject([fakeDebt, fakeDebt2]);
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { category: "fakeCategoryId" };
       await getAll(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual([fakeDebt, fakeDebt2]);
@@ -197,7 +209,7 @@ describe("Debts Controller", () => {
     });
 
     it("should return 500 when error is throwed", async () => {
-      vi.mocked(getSumByDate, true).mockImplementation(() => {
+      vi.mocked(getSumByFilter, true).mockImplementation(() => {
         throw mockedCatchError;
       });
       const { req, res } = initializeReqResMocks();
@@ -207,11 +219,35 @@ describe("Debts Controller", () => {
     });
 
     it("Should Get Total Debts", async () => {
-      vi.mocked(getSumByDate, true).mockResolvedValue({
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
         error: null,
         sum: fakeDebt.amount,
       });
       const { req, res } = initializeReqResMocks();
+      await getTotalDebts(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeDebt.amount);
+    });
+
+    it("Should Get Total Debts in a selected category", async () => {
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
+        error: null,
+        sum: fakeDebt.amount,
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { category: "fakeCategoryId" };
+      await getTotalDebts(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeDebt.amount);
+    });
+
+    it("Should Get Total Debts in a selected date", async () => {
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
+        error: null,
+        sum: fakeDebt.amount,
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { timePeriod: "month", selectedDate: "2022-04" };
       await getTotalDebts(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeDebt.amount);
@@ -224,7 +260,7 @@ describe("Debts Controller", () => {
     });
 
     it("should return 500 when error is throwed", async () => {
-      vi.mocked(getSumByDate, true).mockImplementation(() => {
+      vi.mocked(getSumByFilter, true).mockImplementation(() => {
         throw mockedCatchError;
       });
       const { req, res } = initializeReqResMocks();
@@ -234,11 +270,35 @@ describe("Debts Controller", () => {
     });
 
     it("Should Get Total Loans", async () => {
-      vi.mocked(getSumByDate, true).mockResolvedValue({
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
         error: null,
         sum: fakeDebt.amount,
       });
       const { req, res } = initializeReqResMocks();
+      await getTotalLoans(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeDebt.amount);
+    });
+
+    it("Should Get Total Loans in a selected category", async () => {
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
+        error: null,
+        sum: fakeDebt.amount,
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { category: "fakeCategoryId" };
+      await getTotalLoans(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeDebt.amount);
+    });
+
+    it("Should Get Total Loans in a selected date", async () => {
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
+        error: null,
+        sum: fakeDebt.amount,
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { timePeriod: "month", selectedDate: "2022-04" };
       await getTotalLoans(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeDebt.amount);

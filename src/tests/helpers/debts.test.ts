@@ -9,7 +9,7 @@ import {
 } from "../fake-data/debts";
 import {
   calculateSumByType,
-  getSumByDate,
+  getSumByFilter,
   debtsHelpersErrors,
 } from "../../helpers/debts";
 import { fakeEndDate, fakeStartDate } from "../fake-data/movements";
@@ -83,7 +83,7 @@ describe("Debts Helpers", () => {
         throw mockedCatchError;
       });
 
-      const result = await getSumByDate({
+      const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
         isTotalLoans: true,
       });
@@ -92,7 +92,7 @@ describe("Debts Helpers", () => {
 
     it("Should get sum without filtering by date", async () => {
       vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
-      const result = await getSumByDate({
+      const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
         isTotalLoans: true,
       });
@@ -101,7 +101,7 @@ describe("Debts Helpers", () => {
 
     it("Should get sum by date given a selected date", async () => {
       vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
-      const result = await getSumByDate({
+      const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
         isTotalLoans: true,
         timePeriod: "month",
@@ -112,7 +112,7 @@ describe("Debts Helpers", () => {
 
     it("Should get sum by date given a date range", async () => {
       vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
-      const result = await getSumByDate({
+      const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
         isTotalLoans: true,
         timePeriod: "day",
