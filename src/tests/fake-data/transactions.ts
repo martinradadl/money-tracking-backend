@@ -34,14 +34,6 @@ export const fakeTransactionsList = [
   fakeTransaction3,
 ];
 
-export const fakeAggregates = [
-  { _id: null, balance: fakeTransaction.amount, sum: fakeTransaction.amount },
-];
-
-export const fakeAggregates2 = [
-  { _id: null, balance: fakeTransaction2.amount, sum: fakeTransaction2.amount },
-];
-
 export const getTransactionsPage = (limit?: number, page?: number) => {
   return !limit || !page
     ? fakeTransactionsList
