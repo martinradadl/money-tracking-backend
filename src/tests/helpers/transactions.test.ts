@@ -2,10 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Transaction } from "../../models/transaction";
 import { fakeObjectId, mockedCatchError } from "../utils";
 import {
-  fakeAggregates,
-  fakeAggregates2,
   fakeTransaction,
   fakeTransaction2,
+  fakeTransaction3,
+  fakeTransactionsList,
 } from "../fake-data/transactions";
 import {
   calculateSumByType,
@@ -54,24 +54,50 @@ describe("Transactions Helpers", () => {
       expect(result?.error).toEqual(transactionsHelpersErrors.swappedDateRange);
     });
 
-    it("Should calculate sum of incomes or expenses", async () => {
+    it("Should calculate sum of income or expenses", async () => {
+      const sum = fakeTransactionsList.reduce(
+        (total, elem) => total + elem.amount,
+        0
+      );
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
       vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
       const result = await calculateSumByType({
         userId: fakeObjectId.toString(),
         isIncome: true,
       });
-      expect(result?.sum).toEqual(fakeTransaction.amount);
+      expect(result?.sum).toEqual(
+        fakeTransaction.amount +
+          fakeTransaction2.amount +
+          fakeTransaction3.amount
+      );
     });
 
-    it("Should calculate sum of incomes or expenses when given an start and end date", async () => {
-      vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates2);
+    it("Should calculate sum of income or expenses when given an start and end date", async () => {
+      const filteredList = fakeTransactionsList.filter((elem) =>
+        elem.date.includes("2024-02-04")
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
+      vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
       const result = await calculateSumByType({
         userId: fakeObjectId.toString(),
         isIncome: true,
         startDate: new Date(),
         endDate: new Date(),
       });
-      expect(result?.sum).toEqual(fakeTransaction2.amount);
+      expect(result?.sum).toEqual(fakeTransaction3.amount);
     });
   });
 
@@ -93,15 +119,41 @@ describe("Transactions Helpers", () => {
     });
 
     it("Should get sum without filtering by date", async () => {
+      const sum = fakeTransactionsList.reduce(
+        (total, elem) => total + elem.amount,
+        0
+      );
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
       vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
       const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
         isTotalIncome: true,
       });
-      expect(result.sum).toEqual(fakeTransaction.amount);
+      expect(result.sum).toEqual(
+        fakeTransaction.amount +
+          fakeTransaction2.amount +
+          fakeTransaction3.amount
+      );
     });
 
     it("Should get sum by date given a selected date", async () => {
+      const filteredList = fakeTransactionsList.filter((elem) =>
+        elem.date.includes("2024-02-04")
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
       vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
       const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
@@ -109,10 +161,21 @@ describe("Transactions Helpers", () => {
         timePeriod: "month",
         selectedDate: "2000-02",
       });
-      expect(result.sum).toEqual(fakeTransaction.amount);
+      expect(result.sum).toEqual(fakeTransaction3.amount);
     });
 
     it("Should get sum by date given a date range", async () => {
+      const filteredList = fakeTransactionsList.filter((elem) =>
+        elem.date.includes("2024-02-04")
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
       vi.mocked(Transaction.aggregate, true).mockResolvedValue(fakeAggregates);
       const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
@@ -121,7 +184,7 @@ describe("Transactions Helpers", () => {
         selectedStartDate: "2000-02-02",
         selectedEndDate: "2000-02-03",
       });
-      expect(result.sum).toEqual(fakeTransaction.amount);
+      expect(result.sum).toEqual(fakeTransaction3.amount);
     });
   });
 });
