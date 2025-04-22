@@ -1,12 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Transaction } from "../../models/transaction";
 import { fakeObjectId, mockedCatchError } from "../utils";
-import {
-  fakeTransaction,
-  fakeTransaction2,
-  fakeTransaction3,
-  fakeTransactionsList,
-} from "../fake-data/transactions";
+import { fakeTransactionsList } from "../fake-data/transactions";
 import {
   calculateSumByType,
   getSumByFilter,
