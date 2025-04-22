@@ -19,7 +19,7 @@ import {
   fakeTransactionsList,
   getTransactionsPage,
 } from "./fake-data/transactions";
-import { getSumByDate } from "../helpers/transactions";
+import { getSumByFilter } from "../helpers/transactions";
 import { movementsErrors } from "../helpers/movements";
 
 vi.mock("../models/transaction.ts");
@@ -98,13 +98,31 @@ describe("Transactions Controller", () => {
     it("Should return 200 and get Transactions in a selected date", async () => {
       //@ts-expect-error Unsolved error with mockImplementation function
       vi.mocked(Transaction.find, true).mockImplementation(() => {
-        return defaultGetAllQueryObject([fakeTransaction, fakeTransaction2]);
+        const filteredArray = fakeTransactionsList.filter((elem) =>
+          elem.date.includes("2022-04")
+        );
+        return defaultGetAllQueryObject(filteredArray);
       });
       const { req, res } = initializeReqResMocks();
       req.query = { timePeriod: "month", selectedDate: "2022-04" };
       await getAll(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual([fakeTransaction, fakeTransaction2]);
+    });
+
+    it("Should return 200 and get Transactions in a selected category", async () => {
+      //@ts-expect-error Unsolved error with mockImplementation function
+      vi.mocked(Transaction.find, true).mockImplementation(() => {
+        const filteredArray = fakeTransactionsList.filter(
+          (elem) => elem.category === "fakeCategory"
+        );
+        return defaultGetAllQueryObject(filteredArray);
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { category: "fakeCategoryId" };
+      await getAll(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeTransaction]);
     });
 
     it("Should return 400 when error in getStartAndEndDates is returned", async () => {
@@ -199,7 +217,7 @@ describe("Transactions Controller", () => {
     });
 
     it("should return 500 when error is throwed", async () => {
-      vi.mocked(getSumByDate, true).mockImplementation(() => {
+      vi.mocked(getSumByFilter, true).mockImplementation(() => {
         throw mockedCatchError;
       });
       const { req, res } = initializeReqResMocks();
@@ -209,7 +227,7 @@ describe("Transactions Controller", () => {
     });
 
     it("Should Get Total Income", async () => {
-      vi.mocked(getSumByDate, true).mockResolvedValue({
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
         error: null,
         sum: fakeTransaction.amount,
       });
@@ -217,6 +235,38 @@ describe("Transactions Controller", () => {
       await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeTransaction.amount);
+    });
+
+    it("Should Get Total Income in a selected category", async () => {
+      const filteredList = fakeTransactionsList.filter(
+        (elem) => elem.category === "fakeCategory2"
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
+        error: null,
+        sum,
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { category: "fakeCategoryId" };
+      await getTotalIncome(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(sum);
+    });
+
+    it("Should Get Total Income in a selected date", async () => {
+      const filteredList = fakeTransactionsList.filter((elem) =>
+        elem.date.includes("2022-04")
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
+        error: null,
+        sum,
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      await getTotalIncome(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(sum);
     });
   });
 
@@ -226,7 +276,7 @@ describe("Transactions Controller", () => {
     });
 
     it("should return 500 when error is throwed", async () => {
-      vi.mocked(getSumByDate, true).mockImplementation(() => {
+      vi.mocked(getSumByFilter, true).mockImplementation(() => {
         throw mockedCatchError;
       });
       const { req, res } = initializeReqResMocks();
@@ -236,7 +286,7 @@ describe("Transactions Controller", () => {
     });
 
     it("Should Get Total Expenses", async () => {
-      vi.mocked(getSumByDate, true).mockResolvedValue({
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
         error: null,
         sum: fakeTransaction.amount,
       });
@@ -244,6 +294,38 @@ describe("Transactions Controller", () => {
       await getTotalExpenses(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeTransaction.amount);
+    });
+
+    it("Should Get Total Expenses in a selected category", async () => {
+      const filteredList = fakeTransactionsList.filter(
+        (elem) => elem.category === "fakeCategory2"
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
+        error: null,
+        sum,
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { category: "fakeCategoryId" };
+      await getTotalIncome(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(sum);
+    });
+
+    it("Should Get Total Expenses in a selected date", async () => {
+      const filteredList = fakeTransactionsList.filter((elem) =>
+        elem.date.includes("2022-04")
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      vi.mocked(getSumByFilter, true).mockResolvedValue({
+        error: null,
+        sum,
+      });
+      const { req, res } = initializeReqResMocks();
+      req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      await getTotalIncome(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(sum);
     });
   });
 });

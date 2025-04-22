@@ -14,6 +14,7 @@ type calculateSumByTypeParams = {
   isLoans: boolean;
   startDate?: Date;
   endDate?: Date;
+  category?: string;
 };
 
 export const calculateSumByType = async (params: calculateSumByTypeParams) => {
@@ -23,6 +24,11 @@ export const calculateSumByType = async (params: calculateSumByTypeParams) => {
     const matchQuery: { [key: string]: object } = {
       userId: new ObjectId(params.userId),
     };
+
+    if (params.category) {
+      matchQuery.category = new ObjectId(params.category);
+    }
+
     if (
       (!params.startDate && params.endDate) ||
       (params.startDate && !params.endDate)
@@ -63,19 +69,21 @@ export const calculateSumByType = async (params: calculateSumByTypeParams) => {
   }
 };
 
-type getSumByDateParams = {
+type getSumByFilterParams = {
   userId: string;
   isTotalLoans: boolean;
   timePeriod?: string;
   selectedDate?: string;
   selectedStartDate?: string;
   selectedEndDate?: string;
+  selectedCategory?: string;
 };
 
-export const getSumByDate = async (params: getSumByDateParams) => {
+export const getSumByFilter = async (params: getSumByFilterParams) => {
   try {
     let startDate = undefined;
     let endDate = undefined;
+
     if (params.timePeriod) {
       const { data, error: getStartAndEndDateError } = getStartAndEndDates({
         timePeriod: params.timePeriod,
@@ -96,6 +104,7 @@ export const getSumByDate = async (params: getSumByDateParams) => {
       isLoans: params.isTotalLoans,
       startDate,
       endDate,
+      category: params.selectedCategory,
     });
     if (error instanceof Error) {
       throw error;

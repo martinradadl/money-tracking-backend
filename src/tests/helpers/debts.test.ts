@@ -1,15 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Debt } from "../../models/debt";
 import { fakeObjectId, mockedCatchError } from "../utils";
-import {
-  fakeAggregates,
-  fakeAggregates2,
-  fakeDebt,
-  fakeDebt2,
-} from "../fake-data/debts";
+import { fakeDebtsList } from "../fake-data/debts";
 import {
   calculateSumByType,
-  getSumByDate,
+  getSumByFilter,
   debtsHelpersErrors,
 } from "../../helpers/debts";
 import { fakeEndDate, fakeStartDate } from "../fake-data/movements";
@@ -52,24 +47,43 @@ describe("Debts Helpers", () => {
       expect(result?.error).toEqual(debtsHelpersErrors.swappedDateRange);
     });
 
-    it("Should calculate sum of incomes or expenses", async () => {
+    it("Should calculate sum of loans or debts", async () => {
+      const sum = fakeDebtsList.reduce((total, elem) => total + elem.amount, 0);
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
       vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
       const result = await calculateSumByType({
         userId: fakeObjectId.toString(),
         isLoans: true,
       });
-      expect(result?.sum).toEqual(fakeDebt.amount);
+      expect(result?.sum).toEqual(sum);
     });
 
-    it("Should calculate sum of incomes or expenses when given an start and end date", async () => {
-      vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates2);
+    it("Should calculate sum of loans or debts when given an start and end date", async () => {
+      const filteredList = fakeDebtsList.filter((elem) =>
+        elem.date.includes("2024-02-04")
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
+      vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
       const result = await calculateSumByType({
         userId: fakeObjectId.toString(),
         isLoans: true,
         startDate: new Date(),
         endDate: new Date(),
       });
-      expect(result?.sum).toEqual(fakeDebt2.amount);
+      expect(result?.sum).toEqual(sum);
     });
   });
 
@@ -83,7 +97,7 @@ describe("Debts Helpers", () => {
         throw mockedCatchError;
       });
 
-      const result = await getSumByDate({
+      const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
         isTotalLoans: true,
       });
@@ -91,35 +105,65 @@ describe("Debts Helpers", () => {
     });
 
     it("Should get sum without filtering by date", async () => {
+      const sum = fakeDebtsList.reduce((total, elem) => total + elem.amount, 0);
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
       vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
-      const result = await getSumByDate({
+      const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
         isTotalLoans: true,
       });
-      expect(result.sum).toEqual(fakeDebt.amount);
+      expect(result.sum).toEqual(sum);
     });
 
     it("Should get sum by date given a selected date", async () => {
+      const filteredList = fakeDebtsList.filter((elem) =>
+        elem.date.includes("2024-02-04")
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
       vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
-      const result = await getSumByDate({
+      const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
         isTotalLoans: true,
         timePeriod: "month",
         selectedDate: "2000-02",
       });
-      expect(result.sum).toEqual(fakeDebt.amount);
+      expect(result.sum).toEqual(sum);
     });
 
     it("Should get sum by date given a date range", async () => {
+      const filteredList = fakeDebtsList.filter((elem) =>
+        elem.date.includes("2024-02-04")
+      );
+      const sum = filteredList.reduce((total, elem) => total + elem.amount, 0);
+      const fakeAggregates = [
+        {
+          _id: null,
+          balance: sum,
+          sum,
+        },
+      ];
       vi.mocked(Debt.aggregate, true).mockResolvedValue(fakeAggregates);
-      const result = await getSumByDate({
+      const result = await getSumByFilter({
         userId: fakeObjectId.toString(),
         isTotalLoans: true,
         timePeriod: "day",
         selectedStartDate: "2000-02-02",
         selectedEndDate: "2000-02-03",
       });
-      expect(result.sum).toEqual(fakeDebt.amount);
+      expect(result.sum).toEqual(sum);
     });
   });
 });
