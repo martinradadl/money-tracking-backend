@@ -250,7 +250,7 @@ describe("Transactions Controller", () => {
       req.query = { category: "fakeCategoryId" };
       await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual(fakeTransaction2.amount);
+      expect(res._getJSONData()).toEqual(sum);
     });
 
     it("Should Get Total Income in a selected date", async () => {
@@ -266,9 +266,7 @@ describe("Transactions Controller", () => {
       req.query = { timePeriod: "month", selectedDate: "2022-04" };
       await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual(
-        fakeTransaction.amount + fakeTransaction2.amount
-      );
+      expect(res._getJSONData()).toEqual(sum);
     });
   });
 
@@ -311,7 +309,7 @@ describe("Transactions Controller", () => {
       req.query = { category: "fakeCategoryId" };
       await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual(fakeTransaction2.amount);
+      expect(res._getJSONData()).toEqual(sum);
     });
 
     it("Should Get Total Expenses in a selected date", async () => {
@@ -327,9 +325,7 @@ describe("Transactions Controller", () => {
       req.query = { timePeriod: "month", selectedDate: "2022-04" };
       await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
-      expect(res._getJSONData()).toEqual(
-        fakeTransaction.amount + fakeTransaction2.amount
-      );
+      expect(res._getJSONData()).toEqual(sum);
     });
   });
 });

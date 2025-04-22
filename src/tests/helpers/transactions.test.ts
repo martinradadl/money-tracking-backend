@@ -71,11 +71,7 @@ describe("Transactions Helpers", () => {
         userId: fakeObjectId.toString(),
         isIncome: true,
       });
-      expect(result?.sum).toEqual(
-        fakeTransaction.amount +
-          fakeTransaction2.amount +
-          fakeTransaction3.amount
-      );
+      expect(result?.sum).toEqual(sum);
     });
 
     it("Should calculate sum of income or expenses when given an start and end date", async () => {
@@ -97,7 +93,7 @@ describe("Transactions Helpers", () => {
         startDate: new Date(),
         endDate: new Date(),
       });
-      expect(result?.sum).toEqual(fakeTransaction3.amount);
+      expect(result?.sum).toEqual(sum);
     });
   });
 
@@ -135,11 +131,7 @@ describe("Transactions Helpers", () => {
         userId: fakeObjectId.toString(),
         isTotalIncome: true,
       });
-      expect(result.sum).toEqual(
-        fakeTransaction.amount +
-          fakeTransaction2.amount +
-          fakeTransaction3.amount
-      );
+      expect(result.sum).toEqual(sum);
     });
 
     it("Should get sum by date given a selected date", async () => {
@@ -161,7 +153,7 @@ describe("Transactions Helpers", () => {
         timePeriod: "month",
         selectedDate: "2000-02",
       });
-      expect(result.sum).toEqual(fakeTransaction3.amount);
+      expect(result.sum).toEqual(sum);
     });
 
     it("Should get sum by date given a date range", async () => {
@@ -184,7 +176,7 @@ describe("Transactions Helpers", () => {
         selectedStartDate: "2000-02-02",
         selectedEndDate: "2000-02-03",
       });
-      expect(result.sum).toEqual(fakeTransaction3.amount);
+      expect(result.sum).toEqual(sum);
     });
   });
 });

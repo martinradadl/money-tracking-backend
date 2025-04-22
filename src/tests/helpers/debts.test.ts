@@ -66,9 +66,7 @@ describe("Debts Helpers", () => {
         userId: fakeObjectId.toString(),
         isLoans: true,
       });
-      expect(result?.sum).toEqual(
-        fakeDebt.amount + fakeDebt2.amount + fakeDebt3.amount
-      );
+      expect(result?.sum).toEqual(sum);
     });
 
     it("Should calculate sum of loans or debts when given an start and end date", async () => {
@@ -90,7 +88,7 @@ describe("Debts Helpers", () => {
         startDate: new Date(),
         endDate: new Date(),
       });
-      expect(result?.sum).toEqual(fakeDebt3.amount);
+      expect(result?.sum).toEqual(sum);
     });
   });
 
@@ -125,9 +123,7 @@ describe("Debts Helpers", () => {
         userId: fakeObjectId.toString(),
         isTotalLoans: true,
       });
-      expect(result.sum).toEqual(
-        fakeDebt.amount + fakeDebt2.amount + fakeDebt3.amount
-      );
+      expect(result.sum).toEqual(sum);
     });
 
     it("Should get sum by date given a selected date", async () => {
@@ -149,7 +145,7 @@ describe("Debts Helpers", () => {
         timePeriod: "month",
         selectedDate: "2000-02",
       });
-      expect(result.sum).toEqual(fakeDebt3.amount);
+      expect(result.sum).toEqual(sum);
     });
 
     it("Should get sum by date given a date range", async () => {
@@ -172,7 +168,7 @@ describe("Debts Helpers", () => {
         selectedStartDate: "2000-02-02",
         selectedEndDate: "2000-02-03",
       });
-      expect(result.sum).toEqual(fakeDebt3.amount);
+      expect(result.sum).toEqual(sum);
     });
   });
 });
