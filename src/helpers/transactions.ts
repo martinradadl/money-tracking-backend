@@ -84,7 +84,12 @@ export const getSumByFilter = async (params: getSumByFilterParams) => {
     let startDate = undefined;
     let endDate = undefined;
 
-    if (params.timePeriod) {
+    if (
+      params.timePeriod &&
+      (params.selectedDate ||
+        params.selectedStartDate ||
+        params.selectedEndDate)
+    ) {
       const { data, error: getStartAndEndDateError } = getStartAndEndDates({
         timePeriod: params.timePeriod,
         selectedDate: params.selectedDate,
