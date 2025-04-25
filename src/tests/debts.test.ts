@@ -94,7 +94,7 @@ describe("Debts Controller", () => {
       expect(res._getJSONData()).toEqual(result);
     });
 
-    it("Should return 200 and get Debts in a selected date", async () => {
+    it("Should return 200 and get Debts in a date", async () => {
       //@ts-expect-error Unsolved error with mockImplementation function
       vi.mocked(Debt.find, true).mockImplementation(() => {
         const filteredArray = fakeDebtsList.filter((elem) =>
@@ -103,13 +103,13 @@ describe("Debts Controller", () => {
         return defaultGetAllQueryObject(filteredArray);
       });
       const { req, res } = initializeReqResMocks();
-      req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      req.query = { timePeriod: "month", date: "2022-04" };
       await getAll(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual([fakeDebt, fakeDebt2]);
     });
 
-    it("Should return 200 and get Debts in a selected category", async () => {
+    it("Should return 200 and get Debts in a category", async () => {
       //@ts-expect-error Unsolved error with mockImplementation function
       vi.mocked(Debt.find, true).mockImplementation(() => {
         const filteredArray = fakeDebtsList.filter(
@@ -124,13 +124,12 @@ describe("Debts Controller", () => {
       expect(res._getJSONData()).toEqual([fakeDebt]);
     });
 
-    it("Should return 400 when error in getStartAndEndDates is returned", async () => {
+    it("Should return 400 when error in getRoundedDateRange is returned", async () => {
       const { req, res } = initializeReqResMocks();
       req.query = { timePeriod: "month" };
       await getAll(req, res);
       expect(res.statusCode).toBe(400);
       const error = movementsErrors.noDates;
-      console.log("res._getJSONData(): ", res._getJSONData());
       expect(res._getJSONData()).toEqual({ error: error.message });
     });
   });
@@ -235,7 +234,7 @@ describe("Debts Controller", () => {
       expect(res._getJSONData()).toEqual(fakeDebt.amount);
     });
 
-    it("Should Get Total Debts in a selected category", async () => {
+    it("Should Get Total Debts in a category", async () => {
       const filteredList = fakeDebtsList.filter(
         (elem) => elem.category === "fakeCategory2"
       );
@@ -251,7 +250,7 @@ describe("Debts Controller", () => {
       expect(res._getJSONData()).toEqual(sum);
     });
 
-    it("Should Get Total Debts in a selected date", async () => {
+    it("Should Get Total Debts in a date", async () => {
       const filteredList = fakeDebtsList.filter((elem) =>
         elem.date.includes("2022-04")
       );
@@ -261,7 +260,7 @@ describe("Debts Controller", () => {
         sum,
       });
       const { req, res } = initializeReqResMocks();
-      req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      req.query = { timePeriod: "month", date: "2022-04" };
       await getTotalDebts(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(sum);
@@ -294,7 +293,7 @@ describe("Debts Controller", () => {
       expect(res._getJSONData()).toEqual(fakeDebt.amount);
     });
 
-    it("Should Get Total Loans in a selected category", async () => {
+    it("Should Get Total Loans in a category", async () => {
       const filteredList = fakeDebtsList.filter(
         (elem) => elem.category === "fakeCategory2"
       );
@@ -310,7 +309,7 @@ describe("Debts Controller", () => {
       expect(res._getJSONData()).toEqual(sum);
     });
 
-    it("Should Get Total Loans in a selected date", async () => {
+    it("Should Get Total Loans in a date", async () => {
       const filteredList = fakeDebtsList.filter((elem) =>
         elem.date.includes("2022-04")
       );
@@ -320,7 +319,7 @@ describe("Debts Controller", () => {
         sum,
       });
       const { req, res } = initializeReqResMocks();
-      req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      req.query = { timePeriod: "month", date: "2022-04" };
       await getTotalLoans(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(sum);

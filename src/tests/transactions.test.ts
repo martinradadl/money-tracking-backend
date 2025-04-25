@@ -95,7 +95,7 @@ describe("Transactions Controller", () => {
       expect(res._getJSONData()).toEqual(result);
     });
 
-    it("Should return 200 and get Transactions in a selected date", async () => {
+    it("Should return 200 and get Transactions in a date", async () => {
       //@ts-expect-error Unsolved error with mockImplementation function
       vi.mocked(Transaction.find, true).mockImplementation(() => {
         const filteredArray = fakeTransactionsList.filter((elem) =>
@@ -104,13 +104,13 @@ describe("Transactions Controller", () => {
         return defaultGetAllQueryObject(filteredArray);
       });
       const { req, res } = initializeReqResMocks();
-      req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      req.query = { timePeriod: "month", date: "2022-04" };
       await getAll(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual([fakeTransaction, fakeTransaction2]);
     });
 
-    it("Should return 200 and get Transactions in a selected category", async () => {
+    it("Should return 200 and get Transactions in a category", async () => {
       //@ts-expect-error Unsolved error with mockImplementation function
       vi.mocked(Transaction.find, true).mockImplementation(() => {
         const filteredArray = fakeTransactionsList.filter(
@@ -125,7 +125,7 @@ describe("Transactions Controller", () => {
       expect(res._getJSONData()).toEqual([fakeTransaction]);
     });
 
-    it("Should return 400 when error in getStartAndEndDates is returned", async () => {
+    it("Should return 400 when error in getRoundedDateRange is returned", async () => {
       const { req, res } = initializeReqResMocks();
       req.query = { timePeriod: "month" };
       await getAll(req, res);
@@ -237,7 +237,7 @@ describe("Transactions Controller", () => {
       expect(res._getJSONData()).toEqual(fakeTransaction.amount);
     });
 
-    it("Should Get Total Income in a selected category", async () => {
+    it("Should Get Total Income in a category", async () => {
       const filteredList = fakeTransactionsList.filter(
         (elem) => elem.category === "fakeCategory2"
       );
@@ -253,7 +253,7 @@ describe("Transactions Controller", () => {
       expect(res._getJSONData()).toEqual(sum);
     });
 
-    it("Should Get Total Income in a selected date", async () => {
+    it("Should Get Total Income in a date", async () => {
       const filteredList = fakeTransactionsList.filter((elem) =>
         elem.date.includes("2022-04")
       );
@@ -263,7 +263,7 @@ describe("Transactions Controller", () => {
         sum,
       });
       const { req, res } = initializeReqResMocks();
-      req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      req.query = { timePeriod: "month", date: "2022-04" };
       await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(sum);
@@ -296,7 +296,7 @@ describe("Transactions Controller", () => {
       expect(res._getJSONData()).toEqual(fakeTransaction.amount);
     });
 
-    it("Should Get Total Expenses in a selected category", async () => {
+    it("Should Get Total Expenses in a category", async () => {
       const filteredList = fakeTransactionsList.filter(
         (elem) => elem.category === "fakeCategory2"
       );
@@ -312,7 +312,7 @@ describe("Transactions Controller", () => {
       expect(res._getJSONData()).toEqual(sum);
     });
 
-    it("Should Get Total Expenses in a selected date", async () => {
+    it("Should Get Total Expenses in a date", async () => {
       const filteredList = fakeTransactionsList.filter((elem) =>
         elem.date.includes("2022-04")
       );
@@ -322,7 +322,7 @@ describe("Transactions Controller", () => {
         sum,
       });
       const { req, res } = initializeReqResMocks();
-      req.query = { timePeriod: "month", selectedDate: "2022-04" };
+      req.query = { timePeriod: "month", date: "2022-04" };
       await getTotalIncome(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(sum);

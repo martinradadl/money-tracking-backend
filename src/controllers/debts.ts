@@ -1,37 +1,37 @@
 import { Request, Response } from "express";
 import * as debtModel from "../models/debt";
 import { getSumByFilter } from "../helpers/debts";
-import { getStartAndEndDates } from "../helpers/movements";
+import { getRoundedDateRange } from "../helpers/movements";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query?.page as string) || 1;
     const limit = parseInt(req.query?.limit as string) || 0;
     const timePeriod = req.query?.timePeriod as string;
-    const selectedStartDate = req.query?.startDate as string;
-    const selectedEndDate = req.query?.endDate as string;
-    const selectedDate = req.query?.selectedDate as string;
-    const selectedCategoryId = req.query?.category as string;
+    const startDate = req.query?.startDate as string;
+    const endDate = req.query?.endDate as string;
+    const date = req.query?.date as string;
+    const categoryId = req.query?.category as string;
 
     const findQuery: { [key: string]: object | string } = {
       userId: req.params.userId,
     };
 
-    if (selectedEndDate || selectedStartDate || selectedDate) {
-      const { data, error } = getStartAndEndDates({
+    if (timePeriod) {
+      const { data, error } = getRoundedDateRange({
         timePeriod,
-        selectedEndDate,
-        selectedStartDate,
-        selectedDate,
+        endDate,
+        startDate,
+        date,
       });
       if (error) return res.status(400).json({ error: error.message });
       if (data !== null) {
-        const { startDate, endDate } = data;
-        findQuery.date = { $gte: startDate, $lt: endDate };
+        const { roundedStartDate, roundedEndDate } = data;
+        findQuery.date = { $gte: roundedStartDate, $lt: roundedEndDate };
       }
     }
-    if (selectedCategoryId) {
-      findQuery.category = selectedCategoryId;
+    if (categoryId) {
+      findQuery.category = categoryId;
     }
 
     const debts = await debtModel.Debt.find(findQuery)
@@ -111,10 +111,10 @@ export const getTotalLoans = async (req: Request, res: Response) => {
       userId: req.params.userId,
       isTotalLoans: true,
       timePeriod: req.query.timePeriod as string,
-      selectedDate: req.query.date as string,
-      selectedStartDate: req.query.startDate as string,
-      selectedEndDate: req.query.endDate as string,
-      selectedCategory: req.query.category as string,
+      date: req.query.date as string,
+      startDate: req.query.startDate as string,
+      endDate: req.query.endDate as string,
+      category: req.query.category as string,
     });
     return res.status(200).json(totalLoans.sum);
   } catch (err: unknown) {
@@ -130,10 +130,10 @@ export const getTotalDebts = async (req: Request, res: Response) => {
       userId: req.params.userId,
       timePeriod: req.query.timePeriod as string,
       isTotalLoans: false,
-      selectedDate: req.query.date as string,
-      selectedStartDate: req.query.startDate as string,
-      selectedEndDate: req.query.endDate as string,
-      selectedCategory: req.query.category as string,
+      date: req.query.date as string,
+      startDate: req.query.startDate as string,
+      endDate: req.query.endDate as string,
+      category: req.query.category as string,
     });
     return res.status(200).json(totalDebts.sum);
   } catch (err: unknown) {

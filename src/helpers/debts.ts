@@ -1,5 +1,5 @@
 import { ObjectId } from "../mongo-setup";
-import { getStartAndEndDates } from "./movements";
+import { getRoundedDateRange } from "./movements";
 import * as debtModel from "../models/debt";
 
 export const debtsHelpersErrors = {
@@ -73,10 +73,10 @@ type getSumByFilterParams = {
   userId: string;
   isTotalLoans: boolean;
   timePeriod?: string;
-  selectedDate?: string;
-  selectedStartDate?: string;
-  selectedEndDate?: string;
-  selectedCategory?: string;
+  date?: string;
+  startDate?: string;
+  endDate?: string;
+  category?: string;
 };
 
 export const getSumByFilter = async (params: getSumByFilterParams) => {
@@ -86,22 +86,20 @@ export const getSumByFilter = async (params: getSumByFilterParams) => {
 
     if (
       params.timePeriod &&
-      (params.selectedDate ||
-        params.selectedStartDate ||
-        params.selectedEndDate)
+      (params.date || params.startDate || params.endDate)
     ) {
-      const { data, error: getStartAndEndDateError } = getStartAndEndDates({
+      const { data, error: getStartAndEndDateError } = getRoundedDateRange({
         timePeriod: params.timePeriod,
-        selectedDate: params.selectedDate,
-        selectedStartDate: params.selectedStartDate,
-        selectedEndDate: params.selectedEndDate,
+        date: params.date,
+        startDate: params.startDate,
+        endDate: params.endDate,
       });
       if (getStartAndEndDateError) {
         throw getStartAndEndDateError;
       }
       if (data !== null) {
-        startDate = data.startDate;
-        endDate = data.endDate;
+        startDate = data.roundedStartDate;
+        endDate = data.roundedEndDate;
       }
     }
     const { error, sum } = await calculateSumByType({
@@ -109,7 +107,7 @@ export const getSumByFilter = async (params: getSumByFilterParams) => {
       isLoans: params.isTotalLoans,
       startDate,
       endDate,
-      category: params.selectedCategory,
+      category: params.category,
     });
     if (error instanceof Error) {
       throw error;
