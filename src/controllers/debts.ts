@@ -17,7 +17,7 @@ export const getAll = async (req: Request, res: Response) => {
       userId: req.params.userId,
     };
 
-    if (timePeriod) {
+    if (selectedEndDate || selectedStartDate || selectedDate) {
       const { data, error } = getStartAndEndDates({
         timePeriod,
         selectedEndDate,
@@ -111,9 +111,9 @@ export const getTotalLoans = async (req: Request, res: Response) => {
       userId: req.params.userId,
       isTotalLoans: true,
       timePeriod: req.query.timePeriod as string,
-      selectedDate: req.query.selectedDate as string,
-      selectedStartDate: req.query.selectedStartDate as string,
-      selectedEndDate: req.query.selectedEndDate as string,
+      selectedDate: req.query.date as string,
+      selectedStartDate: req.query.startDate as string,
+      selectedEndDate: req.query.endDate as string,
       selectedCategory: req.query.category as string,
     });
     return res.status(200).json(totalLoans.sum);
@@ -130,9 +130,9 @@ export const getTotalDebts = async (req: Request, res: Response) => {
       userId: req.params.userId,
       timePeriod: req.query.timePeriod as string,
       isTotalLoans: false,
-      selectedDate: req.query.selectedDate as string,
-      selectedStartDate: req.query.selectedStartDate as string,
-      selectedEndDate: req.query.selectedEndDate as string,
+      selectedDate: req.query.date as string,
+      selectedStartDate: req.query.startDate as string,
+      selectedEndDate: req.query.endDate as string,
       selectedCategory: req.query.category as string,
     });
     return res.status(200).json(totalDebts.sum);
