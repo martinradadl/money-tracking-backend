@@ -26,8 +26,8 @@ export const getAll = async (req: Request, res: Response) => {
       });
       if (error) return res.status(400).json({ error: error.message });
       if (data !== null) {
-        const { roundedStartDate, roundedEndDate } = data;
-        findQuery.date = { $gte: roundedStartDate, $lt: roundedEndDate };
+        const { startDate, endDate } = data;
+        findQuery.date = { $gte: startDate, $lt: endDate };
       }
     }
     if (categoryId) {

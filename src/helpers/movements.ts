@@ -19,7 +19,7 @@ type getRoundedDateRangeParams = {
 
 export const getRoundedDateRange = (params: getRoundedDateRangeParams) => {
   type TimePeriods = {
-    [key: string]: { roundedStartDate: Date; roundedEndDate: Date };
+    [key: string]: { startDate: Date; endDate: Date };
   };
   let timePeriods: TimePeriods = {};
   let error = null;
@@ -40,39 +40,34 @@ export const getRoundedDateRange = (params: getRoundedDateRangeParams) => {
     const yearStartDate = new Date(`${params.date}-01-01T00:00:00.000+00:00`);
     timePeriods = {
       day: {
-        roundedStartDate: dayStartDate,
-        roundedEndDate: addDays(dayStartDate, 1),
+        startDate: dayStartDate,
+        endDate: addDays(dayStartDate, 1),
       },
       month: {
-        roundedStartDate: monthStartDate,
-        roundedEndDate: addDays(addMonths(monthStartDate, 1), 1),
+        startDate: monthStartDate,
+        endDate: addDays(addMonths(monthStartDate, 1), 1),
       },
       year: {
-        roundedStartDate: yearStartDate,
-        roundedEndDate: addYears(yearStartDate, 1),
+        startDate: yearStartDate,
+        endDate: addYears(yearStartDate, 1),
       },
     };
   } else {
     timePeriods = {
       day: {
-        roundedStartDate: new Date(`${params.startDate}T00:00:00.000+00:00`),
-        roundedEndDate: addDays(
-          new Date(`${params.endDate}T00:00:00.000+00:00`),
-          1
-        ),
+        startDate: new Date(`${params.startDate}T00:00:00.000+00:00`),
+        endDate: addDays(new Date(`${params.endDate}T00:00:00.000+00:00`), 1),
       },
       month: {
-        roundedStartDate: new Date(`${params.startDate}-01T00:00:00.000+00:00`),
-        roundedEndDate: addMonths(
+        startDate: new Date(`${params.startDate}-01T00:00:00.000+00:00`),
+        endDate: addMonths(
           new Date(`${params.endDate}-01T00:00:00.000+00:00`),
           1
         ),
       },
       year: {
-        roundedStartDate: new Date(
-          `${params.startDate}-01-01T00:00:00.000+00:00`
-        ),
-        roundedEndDate: addYears(
+        startDate: new Date(`${params.startDate}-01-01T00:00:00.000+00:00`),
+        endDate: addYears(
           new Date(`${params.endDate}-01-01T00:00:00.000+00:00`),
           1
         ),

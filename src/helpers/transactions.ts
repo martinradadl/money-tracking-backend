@@ -98,8 +98,8 @@ export const getSumByFilter = async (params: getSumByFilterParams) => {
         throw getStartAndEndDateError;
       }
       if (data !== null) {
-        startDate = data.roundedStartDate;
-        endDate = data.roundedEndDate;
+        startDate = data.startDate;
+        endDate = data.endDate;
       }
     }
     const { error, sum } = await calculateSumByType({

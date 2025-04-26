@@ -38,8 +38,8 @@ describe("Movements Helpers", () => {
         date: fakeStartDate,
       });
       expect(result.data).toEqual({
-        roundedStartDate: new Date(fakeStartDate),
-        roundedEndDate: new Date(fakeEndDate),
+        startDate: new Date(fakeStartDate),
+        endDate: new Date(fakeEndDate),
       });
     });
   });
