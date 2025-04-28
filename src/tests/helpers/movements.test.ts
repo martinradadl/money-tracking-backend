@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getStartAndEndDates, movementsErrors } from "../../helpers/movements";
+import { getRoundedDateRange, movementsErrors } from "../../helpers/movements";
 import { addDays } from "date-fns";
 import { fakeEndDate, fakeStartDate } from "../fake-data/movements";
 
@@ -11,31 +11,31 @@ describe("Movements Helpers", () => {
       vi.restoreAllMocks();
     });
     it("should return error when no dates are given", async () => {
-      const result = getStartAndEndDates({
+      const result = getRoundedDateRange({
         timePeriod: "day",
       });
       expect(result.error).toEqual(movementsErrors.noDates);
     });
     it("should return error when both start and end dates are not given", async () => {
-      const result = getStartAndEndDates({
+      const result = getRoundedDateRange({
         timePeriod: "day",
-        selectedEndDate: fakeEndDate,
+        endDate: fakeEndDate,
       });
       expect(result.error).toEqual(movementsErrors.incompleteDateRange);
     });
     it("should return error when given start date is later than end date", async () => {
-      const result = getStartAndEndDates({
+      const result = getRoundedDateRange({
         timePeriod: "day",
-        selectedStartDate: fakeEndDate,
-        selectedEndDate: fakeStartDate,
+        startDate: fakeEndDate,
+        endDate: fakeStartDate,
       });
       expect(result.error).toEqual(movementsErrors.swappedDateRange);
     });
     it("should return object with start and end date", async () => {
       vi.mocked(addDays, true).mockReturnValue(new Date(fakeEndDate));
-      const result = getStartAndEndDates({
+      const result = getRoundedDateRange({
         timePeriod: "day",
-        selectedDate: fakeStartDate,
+        date: fakeStartDate,
       });
       expect(result.data).toEqual({
         startDate: new Date(fakeStartDate),

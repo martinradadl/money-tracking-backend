@@ -129,7 +129,7 @@ describe("Transactions Helpers", () => {
       expect(result.sum).toEqual(sum);
     });
 
-    it("Should get sum by date given a selected date", async () => {
+    it("Should get sum by date given a date", async () => {
       const filteredList = fakeTransactionsList.filter((elem) =>
         elem.date.includes("2024-02-04")
       );
@@ -146,7 +146,7 @@ describe("Transactions Helpers", () => {
         userId: fakeObjectId.toString(),
         isTotalIncome: true,
         timePeriod: "month",
-        selectedDate: "2000-02",
+        date: "2000-02",
       });
       expect(result.sum).toEqual(sum);
     });
@@ -168,8 +168,8 @@ describe("Transactions Helpers", () => {
         userId: fakeObjectId.toString(),
         isTotalIncome: true,
         timePeriod: "day",
-        selectedStartDate: "2000-02-02",
-        selectedEndDate: "2000-02-03",
+        startDate: "2000-02-02",
+        endDate: "2000-02-03",
       });
       expect(result.sum).toEqual(sum);
     });
