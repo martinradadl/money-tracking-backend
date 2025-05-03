@@ -14,6 +14,11 @@ router.get(
   tokenVerification,
   transactionsController.getTotalExpenses
 );
+router.get(
+  "/:userId/chart-data",
+  tokenVerification,
+  transactionsController.getChartData
+);
 router.get("/:userId", tokenVerification, transactionsController.getAll);
 router.post("/", tokenVerification, transactionsController.create);
 router.put("/:id", tokenVerification, transactionsController.edit);
