@@ -42,3 +42,27 @@ export const getTransactionsPage = (limit?: number, page?: number) => {
         (page - 1) * limit + limit + 1
       );
 };
+
+export const fakeTransactionChartData = {
+  group: "fakeGroup",
+  date: new Date("2022-02-04").toISOString(),
+  amount: 100,
+};
+
+export const fakeTransactionChartData2 = {
+  group: "fakeGroup2",
+  date: new Date("2022-04-02").toISOString(),
+  amount: 200,
+};
+
+export const fakeTransactionChartData3 = {
+  group: "fakeGroup3",
+  date: new Date("2022-04-04").toISOString(),
+  amount: 200,
+};
+
+export const fakeTransactionsChartDataList = [
+  fakeTransactionChartData,
+  fakeTransactionChartData2,
+  fakeTransactionChartData3,
+];

@@ -6,6 +6,7 @@ import {
   getAll,
   getTotalIncome,
   getTotalExpenses,
+  getChartData,
 } from "../controllers/transactions";
 import { Transaction } from "../models/transaction";
 import {
@@ -16,6 +17,10 @@ import {
 import {
   fakeTransaction,
   fakeTransaction2,
+  fakeTransactionChartData,
+  fakeTransactionChartData2,
+  fakeTransactionChartData3,
+  fakeTransactionsChartDataList,
   fakeTransactionsList,
   getTransactionsPage,
 } from "./fake-data/transactions";
@@ -129,6 +134,70 @@ describe("Transactions Controller", () => {
       const { req, res } = initializeReqResMocks();
       req.query = { timePeriod: "month" };
       await getAll(req, res);
+      expect(res.statusCode).toBe(400);
+      const error = movementsErrors.noDates;
+      expect(res._getJSONData()).toEqual({ error: error.message });
+    });
+  });
+
+  describe("Get Chart Data Controller", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should return 500 when error is throwed", async () => {
+      vi.mocked(Transaction.aggregate, true).mockImplementation(() => {
+        throw mockedCatchError;
+      });
+      const { req, res } = initializeReqResMocks();
+      await getChartData(req, res);
+      expect(res.statusCode).toBe(500);
+      expect(res._getJSONData()).toEqual({ message: mockedCatchError.message });
+    });
+
+    it("Should return 200 and get Transactions Chart Data", async () => {
+      vi.mocked(Transaction.aggregate, true).mockResolvedValue(
+        fakeTransactionsChartDataList
+      );
+      const { req, res } = initializeReqResMocks();
+      await getChartData(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(fakeTransactionsChartDataList);
+    });
+
+    it("Should return 200 and get Transactions Chart Data in a given date", async () => {
+      const filteredAggregates = fakeTransactionsChartDataList.filter((elem) =>
+        elem.date.includes("2022-04")
+      );
+      vi.mocked(Transaction.aggregate, true).mockResolvedValue(
+        filteredAggregates
+      );
+      const { req, res } = initializeReqResMocks();
+      req.query = { timePeriod: "month", date: "2022-04" };
+      await getChartData(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([
+        fakeTransactionChartData2,
+        fakeTransactionChartData3,
+      ]);
+    });
+
+    it("Should return 200 and get Transactions Chart Data in a given category", async () => {
+      const filteredAggregates = [fakeTransactionChartData];
+      vi.mocked(Transaction.aggregate, true).mockResolvedValue(
+        filteredAggregates
+      );
+      const { req, res } = initializeReqResMocks();
+      req.query = { category: "123456789012345678901234" };
+      await getChartData(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual([fakeTransactionChartData]);
+    });
+
+    it("Should return 400 when error in getRoundedDateRange is returned", async () => {
+      const { req, res } = initializeReqResMocks();
+      req.query = { timePeriod: "month" };
+      await getChartData(req, res);
       expect(res.statusCode).toBe(400);
       const error = movementsErrors.noDates;
       expect(res._getJSONData()).toEqual({ error: error.message });
