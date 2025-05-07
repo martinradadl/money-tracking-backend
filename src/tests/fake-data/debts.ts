@@ -38,3 +38,27 @@ export const getDebtsPage = (limit?: number, page?: number) => {
     ? fakeDebtsList
     : fakeDebtsList.slice((page - 1) * limit, (page - 1) * limit + limit + 1);
 };
+
+export const fakeDebtChartData = {
+  group: "fakeGroup",
+  date: new Date("2022-02-04").toISOString(),
+  amount: 100,
+};
+
+export const fakeDebtChartData2 = {
+  group: "fakeGroup2",
+  date: new Date("2022-04-02").toISOString(),
+  amount: 200,
+};
+
+export const fakeDebtChartData3 = {
+  group: "fakeGroup3",
+  date: new Date("2022-04-04").toISOString(),
+  amount: 200,
+};
+
+export const fakeDebtsChartDataList = [
+  fakeDebtChartData,
+  fakeDebtChartData2,
+  fakeDebtChartData3,
+];

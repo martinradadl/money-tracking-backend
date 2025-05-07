@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import * as transactionModel from "../models/transaction";
 import { getSumByFilter } from "../helpers/transactions";
 import { getRoundedDateRange } from "../helpers/movements";
+import { ObjectId } from "../mongo-setup";
 
 export const getAll = async (req: Request, res: Response) => {
   try {
@@ -40,6 +41,82 @@ export const getAll = async (req: Request, res: Response) => {
       .populate("category");
 
     return res.status(200).json(transactions);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+};
+
+export const getChartData = async (req: Request, res: Response) => {
+  try {
+    const timePeriod = req.query?.timePeriod as string;
+    const startDate = req.query?.startDate as string;
+    const endDate = req.query?.endDate as string;
+    const date = req.query?.date as string;
+    const categoryId = req.query?.category as string;
+    const isTotalBalance = req.query?.isTotalBalance;
+
+    const matchQuery: { [key: string]: object | string } = {
+      userId: new ObjectId(req.params.userId),
+    };
+
+    if (timePeriod) {
+      const { data, error } = getRoundedDateRange({
+        timePeriod,
+        endDate,
+        startDate,
+        date,
+      });
+      if (error) return res.status(400).json({ error: error.message });
+      if (data !== null) {
+        const { startDate, endDate } = data;
+        matchQuery.date = { $gte: startDate, $lt: endDate };
+      }
+    }
+    if (categoryId) {
+      matchQuery.category = new ObjectId(categoryId);
+    }
+
+    const groupById = {
+      type: isTotalBalance ? undefined : "$type",
+      date: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+    };
+
+    const transactionsAgg = await transactionModel.Transaction.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: groupById,
+          totalAmount: {
+            $sum: {
+              $cond: {
+                if: { $eq: ["$type", "income"] },
+                then: "$amount",
+                else: { $multiply: ["$amount", -1] },
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          group: {
+            $concat: isTotalBalance
+              ? "Transaction"
+              : [
+                  { $toUpper: { $substrCP: ["$_id.type", 0, 1] } },
+                  { $substrCP: ["$_id.type", 1, { $strLenCP: "$_id.type" }] },
+                ],
+          },
+          date: "$_id.date",
+          amount: "$totalAmount",
+        },
+      },
+    ]);
+
+    return res.status(200).json(transactionsAgg);
   } catch (err: unknown) {
     if (err instanceof Error) {
       return res.status(500).json({ message: err.message });

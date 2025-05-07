@@ -14,6 +14,11 @@ router.get(
   tokenVerification,
   debtsController.getTotalDebts
 );
+router.get(
+  "/:userId/chart-data",
+  tokenVerification,
+  debtsController.getChartData
+);
 router.get("/:userId", tokenVerification, debtsController.getAll);
 router.post("/", tokenVerification, debtsController.create);
 router.put("/:id", tokenVerification, debtsController.edit);
