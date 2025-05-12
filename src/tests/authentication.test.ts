@@ -207,6 +207,7 @@ describe("Authentication and User Controllers", () => {
         error: "User not found",
       });
     });
+
     it("Should update User", async () => {
       vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(fakeUser);
       const { req, res } = initializeReqResMocks();
@@ -214,6 +215,26 @@ describe("Authentication and User Controllers", () => {
       await edit(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeUser);
+    });
+
+    it("Should update User by adding a profile pic", async () => {
+      const updatedUser = { ...fakeUser, profilePic: "newProfilePic" };
+      vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(updatedUser);
+      const { req, res } = initializeReqResMocks();
+      req.body = { profilePic: "newProfilePic" };
+      await edit(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(updatedUser);
+    });
+
+    it("Should update User by removing the profile pic", async () => {
+      const updatedUser = { ...fakeUser, profilePic: undefined };
+      vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(updatedUser);
+      const { req, res } = initializeReqResMocks();
+      req.body = { profilePic: "" };
+      await edit(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(updatedUser);
     });
   });
 
