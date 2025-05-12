@@ -25,12 +25,15 @@ initMongo().catch(console.dir);
 app.use(jsonParser);
 app.use(cors({ origin: APP_URL }));
 app.use(cookieParser());
+app.use(express.static('public'));
 app.get("/", (_, res) => res.send("Express on Vercel"));
+app.use('/uploads', express.static('uploads'));
 app.use("/transactions", transactions);
 app.use("/auth", auth);
 app.use("/categories", categories);
 app.use("/debts", debts);
 app.get("/userAuth", tokenVerification, (_, res) => res.send("User Route"));
+
 
 // Start the server and listen on the specified port
 httpServer.listen(port, () => {
