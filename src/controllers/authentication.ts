@@ -8,6 +8,8 @@ import jwt from "jsonwebtoken";
 import { currencies } from "../data/currencies";
 import { APP_URL } from "../helpers/global";
 import { timezones } from "../data/timezones";
+import * as fs from "fs";
+import { UpdateQuery } from "mongoose";
 
 const jwtSecret = process.env.JWT_SECRET;
 const emailSender = {
@@ -91,15 +93,35 @@ export const login = async (req: Request, res: Response) => {
 
 export const edit = async (req: Request, res: Response) => {
   try {
+    if (req.file?.path) {
+      req.body.profilePic = req.file?.path;
+    }
+
+    let dataToUpdate: UpdateQuery<userModel.UserI> = { $set: { ...req.body } };
+
+    if (req.body.profilePic === "") {
+      dataToUpdate = { $unset: { profilePic: "" } };
+    }
+
     const user = await userModel.User.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      dataToUpdate,
       { new: true }
     );
     if (!user) {
       return res.status(401).json({
         message: "Edit not successful",
         error: "User not found",
+      });
+    }
+    if (req.body.profilePic === "") {
+      const filePath = `uploads/${req.params.id}.jpg`;
+
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(`Error removing file: ${err}`);
+          return;
+        }
       });
     }
     return res.status(200).json(user);

@@ -6,6 +6,7 @@ export interface UserI extends mongoose.Document {
   password: string;
   currency: { name: string; code: string };
   timezone: { name: string; offset: string };
+  profilePic: string;
 }
 
 const schema = new mongoose.Schema<UserI>({
@@ -14,6 +15,7 @@ const schema = new mongoose.Schema<UserI>({
   password: String,
   currency: { name: String, code: String },
   timezone: { name: String, offset: String },
+  profilePic: String,
 });
 
 export const User = mongoose.model<UserI>("User", schema);
