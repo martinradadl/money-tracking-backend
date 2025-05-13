@@ -9,7 +9,6 @@ import { currencies } from "../data/currencies";
 import { APP_URL } from "../helpers/global";
 import { timezones } from "../data/timezones";
 import * as fs from "fs";
-import { UpdateQuery } from "mongoose";
 
 const jwtSecret = process.env.JWT_SECRET;
 const emailSender = {
@@ -97,15 +96,9 @@ export const edit = async (req: Request, res: Response) => {
       req.body.profilePic = req.file?.path;
     }
 
-    let dataToUpdate: UpdateQuery<userModel.UserI> = { $set: { ...req.body } };
-
-    if (req.body.profilePic === "") {
-      dataToUpdate = { $unset: { profilePic: "" } };
-    }
-
     const user = await userModel.User.findByIdAndUpdate(
       req.params.id,
-      dataToUpdate,
+      { $set: req.body },
       { new: true }
     );
     if (!user) {
