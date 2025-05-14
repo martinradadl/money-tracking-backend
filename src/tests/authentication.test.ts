@@ -17,6 +17,7 @@ import {
 } from "../controllers/authentication";
 import { User } from "../models/user";
 import {
+  fakeFile,
   fakePassword,
   fakeToken,
   fakeUser,
@@ -27,6 +28,7 @@ import { Transaction } from "../models/transaction";
 import { Debt } from "../models/debt";
 import { currencies } from "../data/currencies";
 import { timezones } from "../data/timezones";
+import fs from "fs";
 
 vi.mock("../models/user");
 vi.mock("../models/transaction");
@@ -34,6 +36,7 @@ vi.mock("../models/debt");
 vi.mock("bcryptjs");
 vi.mock("jsonwebtoken");
 vi.mock("nodemailer");
+vi.mock("fs");
 
 describe("Authentication Middleware", () => {
   afterEach(() => {
@@ -207,6 +210,7 @@ describe("Authentication and User Controllers", () => {
         error: "User not found",
       });
     });
+
     it("Should update User", async () => {
       vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(fakeUser);
       const { req, res } = initializeReqResMocks();
@@ -214,6 +218,27 @@ describe("Authentication and User Controllers", () => {
       await edit(req, res);
       expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toEqual(fakeUser);
+    });
+
+    it("Should update User by adding a profile pic", async () => {
+      const updatedUser = { ...fakeUser, profilePic: "newProfilePic" };
+      vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(updatedUser);
+      const { req, res } = initializeReqResMocks();
+      req.file = fakeFile;
+      await edit(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(updatedUser);
+    });
+
+    it("Should update User by removing the profile pic", async () => {
+      const updatedUser = { ...fakeUser, profilePic: undefined };
+      vi.mocked(User.findByIdAndUpdate, true).mockResolvedValue(updatedUser);
+      vi.mocked(fs, true).unlink.mockImplementation((_, cb) => cb(null));
+      const { req, res } = initializeReqResMocks();
+      req.body = { profilePic: "" };
+      await edit(req, res);
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toEqual(updatedUser);
     });
   });
 

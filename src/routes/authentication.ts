@@ -1,6 +1,7 @@
 import express from "express";
 import * as authController from "../controllers/authentication";
 import { tokenVerification } from "../middleware/authentication";
+import { upload } from "../middleware/file-upload";
 
 const router = express.Router();
 
@@ -11,7 +12,12 @@ router.put(
   tokenVerification,
   authController.changePassword
 );
-router.put("/:id", tokenVerification, authController.edit);
+router.put(
+  "/:id",
+  tokenVerification,
+  upload.single("avatar"),
+  authController.edit
+);
 router.delete("/:id", tokenVerification, authController.deleteUser);
 router.get("/currencies", authController.getCurrencies);
 router.get("/timezones", authController.getTimeZones);
